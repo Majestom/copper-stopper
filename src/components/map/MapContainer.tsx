@@ -8,6 +8,7 @@ import {
   MapContainerProps,
   MapContainerPropsSchema,
 } from "../../schemas/mapSchemas";
+import * as styles from "./MapContainer.css";
 
 export default function MapContainer(props: MapContainerProps) {
   const { width, height, centre, zoom } = MapContainerPropsSchema.parse(props);
@@ -40,15 +41,5 @@ export default function MapContainer(props: MapContainerProps) {
     };
   }, [centre, zoom]);
 
-  return (
-    <div
-      ref={mapRef}
-      style={{
-        width,
-        height,
-        border: "1px solid #ccc",
-        borderRadius: "4px",
-      }}
-    />
-  );
+  return <div ref={mapRef} className={styles.mapContainer} />;
 }

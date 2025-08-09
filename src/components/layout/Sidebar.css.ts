@@ -1,0 +1,54 @@
+import { style } from "@vanilla-extract/css";
+
+export const sidebar = style({
+  width: "130px",
+  height: "100vh",
+  backgroundColor: "#f8f9fa",
+  borderRight: "1px solid #e9ecef",
+  display: "flex",
+  flexDirection: "column",
+  padding: "20px 0",
+});
+
+export const nav = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
+  padding: "0 20px",
+});
+
+export const navButton = style({
+  display: "flex",
+  alignItems: "center",
+  padding: "12px 16px",
+  backgroundColor: "transparent",
+  border: "none",
+  borderRadius: "6px",
+  cursor: "pointer",
+  fontSize: "14px",
+  fontWeight: "500",
+  color: "#495057",
+  textDecoration: "none",
+  transition: "all 0.2s ease",
+
+  ":hover": {
+    backgroundColor: "#e9ecef",
+    color: "#212529",
+  },
+});
+
+export const navButtonActive = style({
+  backgroundColor: "#007bff",
+  color: "white",
+
+  ":hover": {
+    backgroundColor: "#0056b3",
+    color: "white",
+  },
+});
+
+export const navIcon = style({
+  marginRight: "12px",
+  width: "20px",
+  height: "20px",
+});
