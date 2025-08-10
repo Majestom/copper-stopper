@@ -1,0 +1,25 @@
+services:
+  # Data fetcher service - runs once to populate SQLite database
+  data-fetcher:
+    build: ./data-fetcher
+    volumes:
+      - ./data:/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    # This service will exit after fetching all data
+    restart: "no"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/data
+    depends_on:
+      - data-fetcher
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+
+volumes:
+  data-volume:
