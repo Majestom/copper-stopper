@@ -45,3 +45,12 @@ next-env.d.ts
 copilot-instructions.md
 
 node_modules/
+
+# Python
+data-fetcher/__pycache__/
+data-fetcher/*.pyc
+
+# Database
+data/
+*.db
+*.sqlite
