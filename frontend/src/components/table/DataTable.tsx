@@ -2,9 +2,6 @@ import { useState, useEffect } from "react";
 import {
   useReactTable,
   getCoreRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
   flexRender,
   createColumnHelper,
   type SortingState,
@@ -16,7 +13,7 @@ import * as styles from "./DataTable.css";
 type DataTableProps = {
   data: StopSearchRecord[];
   isLoading?: boolean;
-  pagination?: {
+  pagination: {
     current: {
       page: number;
       pageSize: number;
@@ -27,12 +24,12 @@ type DataTableProps = {
     hasPreviousPage: boolean;
     currentPageRecords: number;
   };
-  onPageChange?: (page: number) => void;
+  onPageChange: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
-  onSort?: (sort: PoliceDataSort) => void;
-  currentSort?: PoliceDataSort;
-  onFilter?: (filters: Partial<PoliceDataFilters>) => void;
-  currentFilters?: PoliceDataFilters;
+  onSort: (sort: PoliceDataSort) => void;
+  currentSort: PoliceDataSort;
+  onFilter: (filters: Partial<PoliceDataFilters>) => void;
+  currentFilters: PoliceDataFilters;
 };
 
 const columnHelper = createColumnHelper<StopSearchRecord>();
@@ -41,7 +38,6 @@ const columns = [
   columnHelper.accessor("datetime", {
     header: "Date & Time",
     cell: (info) => new Date(info.getValue()).toLocaleString(),
-    sortingFn: "datetime",
   }),
   columnHelper.accessor("type", {
     header: "Type",
@@ -84,40 +80,33 @@ export default function DataTable({
   currentFilters,
 }: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
-
-  const isServerSide = Boolean(pagination && onPageChange);
+  const [searchInput, setSearchInput] = useState("");
 
   useEffect(() => {
-    if (currentSort) {
-      setSorting([
-        {
-          id: currentSort.field,
-          desc: currentSort.direction === "desc",
-        },
-      ]);
-    }
+    setSorting([
+      {
+        id: currentSort.field,
+        desc: currentSort.direction === "desc",
+      },
+    ]);
   }, [currentSort]);
 
   useEffect(() => {
-    if (currentFilters?.search !== undefined) {
-      setGlobalFilter(currentFilters.search);
-    }
-  }, [currentFilters?.search]);
+    setSearchInput(currentFilters.search || "");
+  }, [currentFilters.search]);
 
   const table = useReactTable({
     data,
     columns,
     state: {
       sorting,
-      globalFilter,
     },
     onSortingChange: (updater) => {
       const newSorting =
         typeof updater === "function" ? updater(sorting) : updater;
       setSorting(newSorting);
 
-      if (isServerSide && onSort && newSorting.length > 0) {
+      if (newSorting.length > 0) {
         const sort = newSorting[0];
         onSort({
           field: sort.id,
@@ -125,43 +114,30 @@ export default function DataTable({
         });
       }
     },
-    onGlobalFilterChange: (value) => {
-      setGlobalFilter(value);
-
-      if (isServerSide && onFilter) {
-        onFilter({ search: value });
-      }
-    },
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    ...(isServerSide
-      ? {}
-      : {
-          getFilteredRowModel: getFilteredRowModel(),
-          getPaginationRowModel: getPaginationRowModel(),
-          initialState: {
-            pagination: { pageSize: 20 },
-          },
-        }),
-    manualSorting: isServerSide,
-    manualFiltering: isServerSide,
-    manualPagination: isServerSide,
+    manualSorting: true,
+    manualFiltering: true,
+    manualPagination: true,
   });
 
-  if (isLoading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <p>Loading table data...</p>
-      </div>
-    );
-  }
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+  };
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      onFilter({ search: searchInput });
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput, onFilter]);
 
   return (
     <div className={styles.container}>
       <div className={styles.searchContainer}>
         <input
-          value={globalFilter ?? ""}
-          onChange={(e) => setGlobalFilter(e.target.value)}
+          value={searchInput}
+          onChange={(e) => handleSearchChange(e.target.value)}
           placeholder="Search all records..."
           className={styles.searchInput}
         />
@@ -207,164 +183,117 @@ export default function DataTable({
             ))}
           </thead>
           <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className={styles.tableRow}>
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className={styles.tableCell}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
+            {isLoading ? (
+              Array.from({ length: 10 }).map((_, index) => (
+                <tr key={`loading-${index}`} className={styles.tableRow}>
+                  {columns.map((_, colIndex) => (
+                    <td
+                      key={colIndex}
+                      className={styles.tableCell}
+                      style={{ opacity: 0.5 }}
+                    >
+                      Loading...
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : table.getRowModel().rows.length === 0 ? (
+              <tr className={styles.tableRow}>
+                <td
+                  colSpan={columns.length}
+                  className={styles.tableCell}
+                  style={{ textAlign: "center", padding: "2rem" }}
+                >
+                  {currentFilters.search
+                    ? `No results found for "${currentFilters.search}"`
+                    : "No data available"}
+                </td>
               </tr>
-            ))}
+            ) : (
+              table.getRowModel().rows.map((row) => (
+                <tr key={row.id} className={styles.tableRow}>
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className={styles.tableCell}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
       <div className={styles.paginationContainer}>
-        {isServerSide && pagination ? (
-          <>
-            <div className={styles.paginationInfo}>
-              Showing{" "}
-              {pagination.currentPageRecords > 0
-                ? (pagination.current.page - 1) * pagination.current.pageSize +
-                  1
-                : 0}{" "}
-              to{" "}
-              {(pagination.current.page - 1) * pagination.current.pageSize +
-                pagination.currentPageRecords}{" "}
-              of {pagination.total.toLocaleString()} entries
-              {globalFilter && ` (filtered)`}
-            </div>
+        <div className={styles.paginationInfo}>
+          Showing{" "}
+          {pagination.currentPageRecords > 0
+            ? (pagination.current.page - 1) * pagination.current.pageSize + 1
+            : 0}{" "}
+          to{" "}
+          {(pagination.current.page - 1) * pagination.current.pageSize +
+            pagination.currentPageRecords}{" "}
+          of {pagination.total.toLocaleString()} entries
+          {currentFilters.search && ` (filtered)`}
+        </div>
 
-            <div className={styles.paginationControls}>
-              <button
-                onClick={() => onPageChange?.(1)}
-                disabled={!pagination.hasPreviousPage}
-                className={
-                  pagination.hasPreviousPage
-                    ? styles.paginationButton
-                    : styles.paginationButtonDisabled
-                }
-              >
-                {"<<"}
-              </button>
-              <button
-                onClick={() => onPageChange?.(pagination.current.page - 1)}
-                disabled={!pagination.hasPreviousPage}
-                className={
-                  pagination.hasPreviousPage
-                    ? styles.paginationButton
-                    : styles.paginationButtonDisabled
-                }
-              >
-                {"<"}
-              </button>
+        <div className={styles.paginationControls}>
+          <button
+            onClick={() => onPageChange(1)}
+            disabled={!pagination.hasPreviousPage}
+            className={
+              pagination.hasPreviousPage
+                ? styles.paginationButton
+                : styles.paginationButtonDisabled
+            }
+          >
+            {"<<"}
+          </button>
+          <button
+            onClick={() => onPageChange(pagination.current.page - 1)}
+            disabled={!pagination.hasPreviousPage}
+            className={
+              pagination.hasPreviousPage
+                ? styles.paginationButton
+                : styles.paginationButtonDisabled
+            }
+          >
+            {"<"}
+          </button>
 
-              <span className={styles.pageInfo}>
-                Page{" "}
-                <strong className={styles.pageInfoStrong}>
-                  {pagination.current.page} of {pagination.totalPages}
-                </strong>
-              </span>
+          <span className={styles.pageInfo}>
+            Page{" "}
+            <strong className={styles.pageInfoStrong}>
+              {pagination.current.page} of {pagination.totalPages}
+            </strong>
+          </span>
 
-              <button
-                onClick={() => onPageChange?.(pagination.current.page + 1)}
-                disabled={!pagination.hasNextPage}
-                className={
-                  pagination.hasNextPage
-                    ? styles.paginationButton
-                    : styles.paginationButtonDisabled
-                }
-              >
-                {">"}
-              </button>
-              <button
-                onClick={() => onPageChange?.(pagination.totalPages)}
-                disabled={!pagination.hasNextPage}
-                className={
-                  pagination.hasNextPage
-                    ? styles.paginationButton
-                    : styles.paginationButtonDisabled
-                }
-              >
-                {">>"}
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className={styles.paginationInfo}>
-              Showing{" "}
-              {table.getState().pagination.pageIndex *
-                table.getState().pagination.pageSize +
-                1}{" "}
-              to{" "}
-              {Math.min(
-                (table.getState().pagination.pageIndex + 1) *
-                  table.getState().pagination.pageSize,
-                table.getPrePaginationRowModel().rows.length
-              )}{" "}
-              of {table.getPrePaginationRowModel().rows.length} entries
-              {globalFilter && ` (filtered from ${data.length} total)`}
-            </div>
-
-            <div className={styles.paginationControls}>
-              <button
-                onClick={() => table.setPageIndex(0)}
-                disabled={!table.getCanPreviousPage()}
-                className={
-                  table.getCanPreviousPage()
-                    ? styles.paginationButton
-                    : styles.paginationButtonDisabled
-                }
-              >
-                {"<<"}
-              </button>
-              <button
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-                className={
-                  table.getCanPreviousPage()
-                    ? styles.paginationButton
-                    : styles.paginationButtonDisabled
-                }
-              >
-                {"<"}
-              </button>
-
-              <span className={styles.pageInfo}>
-                Page{" "}
-                <strong className={styles.pageInfoStrong}>
-                  {table.getState().pagination.pageIndex + 1} of{" "}
-                  {table.getPageCount()}
-                </strong>
-              </span>
-
-              <button
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-                className={
-                  table.getCanNextPage()
-                    ? styles.paginationButton
-                    : styles.paginationButtonDisabled
-                }
-              >
-                {">"}
-              </button>
-              <button
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                disabled={!table.getCanNextPage()}
-                className={
-                  table.getCanNextPage()
-                    ? styles.paginationButton
-                    : styles.paginationButtonDisabled
-                }
-              >
-                {">>"}
-              </button>
-            </div>
-          </>
-        )}
+          <button
+            onClick={() => onPageChange(pagination.current.page + 1)}
+            disabled={!pagination.hasNextPage}
+            className={
+              pagination.hasNextPage
+                ? styles.paginationButton
+                : styles.paginationButtonDisabled
+            }
+          >
+            {">"}
+          </button>
+          <button
+            onClick={() => onPageChange(pagination.totalPages)}
+            disabled={!pagination.hasNextPage}
+            className={
+              pagination.hasNextPage
+                ? styles.paginationButton
+                : styles.paginationButtonDisabled
+            }
+          >
+            {">>"}
+          </button>
+        </div>
       </div>
     </div>
   );
