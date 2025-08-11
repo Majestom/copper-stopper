@@ -113,5 +113,13 @@ export default function MapContainer(props: MapContainerProps) {
     map.addLayer(vectorLayer);
   }, [policeData, error, isLoading]);
 
+  if (isLoading) {
+    return <div>Loading map data...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading map data: {error.message}</div>;
+  }
+
   return <div ref={mapRef} className={styles.mapContainer} />;
 }
