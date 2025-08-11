@@ -2,7 +2,7 @@ import { style } from "@vanilla-extract/css";
 
 export const sidebar = style({
   width: "130px",
-  height: "100vh",
+  height: "100%",
   backgroundColor: "#f8f9fa",
   borderRight: "1px solid #e9ecef",
   display: "flex",
