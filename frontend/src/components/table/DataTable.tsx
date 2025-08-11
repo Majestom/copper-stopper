@@ -126,11 +126,13 @@ export default function DataTable({
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      onFilter({ search: searchInput });
+      if (searchInput !== currentFilters.search) {
+        onFilter({ search: searchInput });
+      }
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchInput, onFilter]);
+  }, [searchInput, onFilter, currentFilters.search]);
 
   return (
     <div className={styles.container}>
@@ -236,7 +238,9 @@ export default function DataTable({
           to{" "}
           {(pagination.current.page - 1) * pagination.current.pageSize +
             pagination.currentPageRecords}{" "}
-          of {pagination.total.toLocaleString()} entries
+          of{" "}
+          {pagination.total > 0 ? pagination.total.toLocaleString() : "unknown"}{" "}
+          entries
           {currentFilters.search && ` (filtered)`}
         </div>
 
@@ -267,7 +271,8 @@ export default function DataTable({
           <span className={styles.pageInfo}>
             Page{" "}
             <strong className={styles.pageInfoStrong}>
-              {pagination.current.page} of {pagination.totalPages}
+              {pagination.current.page} of{" "}
+              {pagination.totalPages > 0 ? pagination.totalPages : "?"}
             </strong>
           </span>
 
@@ -284,9 +289,9 @@ export default function DataTable({
           </button>
           <button
             onClick={() => onPageChange(pagination.totalPages)}
-            disabled={!pagination.hasNextPage}
+            disabled={!pagination.hasNextPage || pagination.totalPages <= 0}
             className={
-              pagination.hasNextPage
+              pagination.hasNextPage && pagination.totalPages > 0
                 ? styles.paginationButton
                 : styles.paginationButtonDisabled
             }

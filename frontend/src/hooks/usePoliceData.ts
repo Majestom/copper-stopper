@@ -37,6 +37,8 @@ async function fetchPoliceData({
   params.append("page", pagination.page.toString());
   params.append("pageSize", pagination.pageSize.toString());
 
+  params.append("needsCount", "true");
+
   if (sort) {
     params.append("sortField", sort.field);
     params.append("sortDirection", sort.direction);
