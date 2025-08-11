@@ -1,72 +1,94 @@
 import Head from "next/head";
 import MainLayout from "../components/layout/MainLayout";
 import { useBasicPoliceData } from "../hooks/useBasicPoliceData";
-import { StopSearchRecord } from "@/schemas/dbSchemas";
+import DataTable from "../components/table/DataTable";
+import * as styles from "../styles/pages/table.css";
 
 export default function TablePage() {
   const { data, isLoading, error } = useBasicPoliceData();
+
+  const totalRecords = data?.pagination?.total || 0;
+  const currentPageRecords = data?.data?.length || 0;
+  const recordsPercentage =
+    totalRecords > 0
+      ? ((currentPageRecords / totalRecords) * 100).toFixed(1)
+      : "0";
+
   return (
     <>
       <Head>
-        <title>Police Data Visualization - Table View</title>
+        <title>Police Data - Table View</title>
         <meta
           name="description"
-          content="Police stop and search data in table format"
+          content="Police stop and search data in table format with advanced filtering and sorting"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <MainLayout>
-        <div>
-          <h1
-            style={{
-              marginBottom: "20px",
-              fontSize: "24px",
-              fontWeight: "600",
-            }}
-          >
-            Police Stop & Search Data - Table View
-          </h1>
-          <p style={{ marginBottom: "20px", color: "#666" }}>
-            Tabular view of police stop and search data with sorting and
-            filtering
-          </p>
+        <div className={styles.pageContainer}>
+          <header className={styles.header}>
+            <h1 className={styles.title}>Police Stop & Search Data</h1>
+          </header>
 
-          <div
-            style={{
-              width: "100%",
-              height: "calc(100vh - 160px)",
-              backgroundColor: "#f8f9fa",
-              border: "1px solid #e9ecef",
-              borderRadius: "6px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "16px",
-              color: "#666",
-            }}
-          >
-            {isLoading && <p>Loading...</p>}
-            {error && <p>Error: {error.message}</p>}
-            {data &&
-              data.data.map((record: StopSearchRecord) => (
-                <div key={record.id} style={{ margin: "10px" }}>
-                  <p>
-                    <strong>Date:</strong> {record.datetime}
-                  </p>
-                  <p>
-                    <strong>Type:</strong> {record.type || "N/A"}
-                  </p>
-                  <p>
-                    <strong>Age Range:</strong> {record.age_range || "N/A"}
-                  </p>
-                  <p>
-                    <strong>Gender:</strong> {record.gender || "N/A"}
-                  </p>
+          {error && (
+            <div className={styles.errorAlert}>
+              <strong>⚠️ Error loading data:</strong> {error.message}
+              <br />
+              <span style={{ fontSize: "0.8rem", opacity: 0.8 }}>
+                Please try refreshing the page or contact support if the issue
+                persists.
+              </span>
+            </div>
+          )}
+
+          {isLoading && (
+            <div className={styles.statsCard}>
+              <div className={styles.statsIcon}>⏳</div>
+              <div className={styles.statsContent}>
+                <div className={styles.statsTitle}>Loading Data</div>
+                <div className={styles.statsValue}>Please wait...</div>
+                <div className={styles.statsSubtext}>
+                  Fetching police stop and search records
                 </div>
-              ))}
-          </div>
+              </div>
+            </div>
+          )}
+
+          {data && !isLoading && (
+            <div className={styles.statsCard}>
+              <div className={styles.statsIcon}>📊</div>
+              <div className={styles.statsContent}>
+                <div className={styles.statsTitle}>Dataset Overview</div>
+                <div className={styles.statsValue}>
+                  {currentPageRecords.toLocaleString()}
+                  <span>records displayed</span>
+                </div>
+                <div className={styles.statsSubtext}>
+                  from {totalRecords.toLocaleString()} total records
+                  <span> ({recordsPercentage}% of dataset)</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <section className={styles.tableSection}>
+            <div className={styles.tableHeader}>
+              <h2 className={styles.tableSectionTitle}>
+                Stop & Search Records
+              </h2>
+              <p className={styles.tableSectionSubtitle}>
+                Interactive table with sorting, filtering, and pagination. Click
+                column headers to sort, use the search box to filter across all
+                fields.
+              </p>
+            </div>
+
+            <div className={styles.tableContent}>
+              <DataTable data={data?.data || []} isLoading={isLoading} />
+            </div>
+          </section>
         </div>
       </MainLayout>
     </>
