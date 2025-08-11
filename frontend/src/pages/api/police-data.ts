@@ -56,12 +56,28 @@ function buildWhereClause(params: QueryParams): {
     const searchTerm = `%${params.search}%`;
 
     conditions.push(`(
-      type LIKE ? OR 
-      gender LIKE ? OR 
-      outcome LIKE ? OR
-      age_range LIKE ?
+      type LIKE ? COLLATE NOCASE OR 
+      gender LIKE ? COLLATE NOCASE OR 
+      outcome LIKE ? COLLATE NOCASE OR
+      age_range LIKE ? COLLATE NOCASE OR
+      object_of_search LIKE ? COLLATE NOCASE OR
+      street_name LIKE ? COLLATE NOCASE OR
+      legislation LIKE ? COLLATE NOCASE OR
+      self_defined_ethnicity LIKE ? COLLATE NOCASE OR
+      officer_defined_ethnicity LIKE ? COLLATE NOCASE
     )`);
-    values.push(searchTerm, searchTerm, searchTerm, searchTerm);
+
+    values.push(
+      searchTerm, // type
+      searchTerm, // gender
+      searchTerm, // outcome
+      searchTerm, // age_range
+      searchTerm, // object_of_search
+      searchTerm, // street_name
+      searchTerm, // legislation
+      searchTerm, // self_defined_ethnicity
+      searchTerm // officer_defined_ethnicity
+    );
   }
 
   if (params.type) {
