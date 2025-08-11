@@ -98,27 +98,34 @@ export default function TablePage() {
               </div>
             )}
 
-            {Object.values(filters).some(Boolean) && (
-              <div className={styles.successAlert}>
-                <strong>🔍 Active Filters:</strong>
-                {filters.search && ` Search: "${filters.search}"`}
-                {filters.type && ` Type: ${filters.type}`}
-                {filters.gender && ` Gender: ${filters.gender}`}
-                {filters.outcome && ` Outcome: ${filters.outcome}`}{" "}
-                <button
-                  onClick={clearFilters}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    textDecoration: "underline",
-                    cursor: "pointer",
-                    color: "inherit",
-                  }}
-                >
-                  Clear all filters
-                </button>
-              </div>
-            )}
+            <div className={styles.successAlert}>
+              {Object.values(filters).some(Boolean) ? (
+                <>
+                  <strong>🔍 Active Filters:</strong>
+                  {filters.search && ` Search: "${filters.search}"`}
+                  {filters.type && ` Type: ${filters.type}`}
+                  {filters.gender && ` Gender: ${filters.gender}`}
+                  {filters.outcome && ` Outcome: ${filters.outcome}`}{" "}
+                  <button
+                    onClick={clearFilters}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      color: "inherit",
+                    }}
+                  >
+                    Clear all filters
+                  </button>
+                </>
+              ) : (
+                <>
+                  <strong>📋 Filters:</strong> No filters applied - showing all
+                  records
+                </>
+              )}
+            </div>
 
             <section className={styles.tableSection}>
               <div className={styles.tableHeader}>
