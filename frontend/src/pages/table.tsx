@@ -1,7 +1,10 @@
 import Head from "next/head";
 import MainLayout from "../components/layout/MainLayout";
+import { useBasicPoliceData } from "../hooks/useBasicPoliceData";
+import { StopSearchRecord } from "@/schemas/dbSchemas";
 
 export default function TablePage() {
+  const { data, isLoading, error } = useBasicPoliceData();
   return (
     <>
       <Head>
@@ -44,7 +47,25 @@ export default function TablePage() {
               color: "#666",
             }}
           >
-            Table component will go here
+            {isLoading && <p>Loading...</p>}
+            {error && <p>Error: {error.message}</p>}
+            {data &&
+              data.data.map((record: StopSearchRecord) => (
+                <div key={record.id} style={{ margin: "10px" }}>
+                  <p>
+                    <strong>Date:</strong> {record.datetime}
+                  </p>
+                  <p>
+                    <strong>Type:</strong> {record.type || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Age Range:</strong> {record.age_range || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Gender:</strong> {record.gender || "N/A"}
+                  </p>
+                </div>
+              ))}
           </div>
         </div>
       </MainLayout>
