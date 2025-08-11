@@ -111,7 +111,7 @@ export default function MapContainer(props: MapContainerProps) {
 
     vectorLayerRef.current = vectorLayer;
     map.addLayer(vectorLayer);
-  }, [policeData]);
+  }, [policeData, error, isLoading]);
 
   return <div ref={mapRef} className={styles.mapContainer} />;
 }
