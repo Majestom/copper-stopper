@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Police Data Map</title>
+        <title>Police Data - Map View</title>
         <meta
           name="description"
           content="Police stop and search data visualisation"
