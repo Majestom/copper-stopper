@@ -27,6 +27,7 @@ export const searchContainer = style({
 });
 
 export const searchInput = style({
+  color: "black",
   padding: "8px 12px",
   border: "1px solid #d1d5db",
   borderRadius: "6px",
