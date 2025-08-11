@@ -149,32 +149,39 @@ export const paginationControls = style({
 });
 
 export const paginationButton = style({
-  padding: "6px 12px",
-  border: "1px solid #ccc",
+  padding: "8px 14px",
+  border: "1px solid #007bff",
   borderRadius: "4px",
   backgroundColor: "white",
   cursor: "pointer",
   transition: "all 0.15s ease",
-  fontSize: "0.875rem",
-  minWidth: "40px",
+  fontSize: "1rem",
+  fontWeight: "bold",
+  fontFamily: "monospace",
+  minWidth: "44px",
+  color: "#007bff",
   ":hover": {
-    backgroundColor: "#f8f9fa",
-    borderColor: "#007bff",
+    backgroundColor: "#007bff",
+    color: "white",
+    borderColor: "#0056b3",
   },
   ":active": {
-    backgroundColor: "#e9ecef",
+    backgroundColor: "#0056b3",
+    borderColor: "#004085",
   },
 });
 
 export const paginationButtonDisabled = style([
   paginationButton,
   {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f8f9fa",
     cursor: "not-allowed",
-    color: "#999",
+    color: "#6c757d",
+    borderColor: "#dee2e6",
     ":hover": {
-      backgroundColor: "#f5f5f5",
-      borderColor: "#ccc",
+      backgroundColor: "#f8f9fa",
+      color: "#6c757d",
+      borderColor: "#dee2e6",
     },
   },
 ]);
