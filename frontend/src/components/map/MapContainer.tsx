@@ -108,6 +108,7 @@ export default function MapContainer(props: MapContainerProps) {
         center: fromLonLat(centre),
         zoom,
       }),
+      controls: [],
     });
 
     mapInstanceRef.current = map;
