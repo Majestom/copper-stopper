@@ -33,6 +33,7 @@ export default function MapContainer(props: MapContainerProps) {
   const vectorLayerRef = useRef<VectorLayer | null>(null);
   const centreRef = useRef(centre);
   const initialZoomRef = useRef(initialZoom);
+  const isUserInteractionRef = useRef(false);
 
   useEffect(() => {
     centreRef.current = centre;
@@ -70,8 +71,20 @@ export default function MapContainer(props: MapContainerProps) {
       const source = vectorLayerRef.current.getSource();
       if (source) {
         source.clear();
+
+        const features = newClusters.map((cluster: ClusterData) => {
+          const feature = new Feature({
+            geometry: new Point(
+              fromLonLat([cluster.cluster_lng, cluster.cluster_lat])
+            ),
+            clusterData: cluster,
+          });
+          return feature;
+        });
+
+        source.addFeatures(features);
+        return;
       }
-      map.removeLayer(vectorLayerRef.current);
     }
 
     if (!newClusters.length) return;
@@ -142,7 +155,10 @@ export default function MapContainer(props: MapContainerProps) {
       view: new View({
         center: fromLonLat(centreRef.current),
         zoom: initialZoomRef.current,
-        constrainResolution: true,
+        constrainResolution: false,
+        minZoom: 2,
+        maxZoom: 20,
+        enableRotation: false,
       }),
       controls: [],
     });
@@ -150,6 +166,20 @@ export default function MapContainer(props: MapContainerProps) {
     mapInstanceRef.current = map;
 
     let zoomTimeout: NodeJS.Timeout;
+
+    const handleInteractionStart = () => {
+      isUserInteractionRef.current = true;
+    };
+
+    const handleInteractionEnd = () => {
+      setTimeout(() => {
+        isUserInteractionRef.current = false;
+      }, 100);
+    };
+
+    map.on("pointerdrag", handleInteractionStart);
+    map.getView().on("change:resolution", handleInteractionStart);
+
     map.getView().on("change:resolution", () => {
       clearTimeout(zoomTimeout);
       zoomTimeout = setTimeout(() => {
@@ -158,7 +188,8 @@ export default function MapContainer(props: MapContainerProps) {
         );
 
         updateZoomRef.current(newZoom);
-      }, 300);
+        handleInteractionEnd();
+      }, 500);
     });
 
     return () => {
@@ -169,13 +200,6 @@ export default function MapContainer(props: MapContainerProps) {
       }
     };
   }, []);
-
-  useEffect(() => {
-    if (mapInstanceRef.current) {
-      const view = mapInstanceRef.current.getView();
-      view.setCenter(fromLonLat(centre));
-    }
-  }, [centre]);
 
   useEffect(() => {
     if (clusters && clusters.length > 0) {
