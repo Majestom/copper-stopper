@@ -21,6 +21,7 @@ import {
   MapContainerProps,
   MapContainerPropsSchema,
 } from "../../schemas/mapSchemas";
+import FloatingFilterPanel from "./FloatingFilterPanel";
 import * as styles from "./MapContainer.css";
 
 function getClusterDistance(zoom: number): number {
@@ -75,10 +76,18 @@ function getClusterStyle(feature: FeatureLike, _resolution: number) {
 }
 
 export default function MapContainer(props: MapContainerProps) {
-  const { width, height, centre, zoom } = MapContainerPropsSchema.parse(props);
+  const { centre, zoom } = MapContainerPropsSchema.parse(props);
 
   const mapData = usePoliceDataForMap(8000);
-  const { data: policeData, isLoading, error } = mapData;
+  const {
+    data: policeData,
+    isLoading,
+    isFetching,
+    error,
+    filters,
+    updateFilters,
+    clearFilters,
+  } = mapData;
 
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<Map | null>(null);
@@ -172,15 +181,46 @@ export default function MapContainer(props: MapContainerProps) {
 
     vectorLayerRef.current = vectorLayer;
     map.addLayer(vectorLayer);
+
+    map.on("click", (evt) => {
+      map.forEachFeatureAtPixel(evt.pixel, (feature) => {
+        const features = feature.get("features");
+        if (features?.length > 1) {
+          console.log(
+            "Cluster details:",
+            features.map((f: Feature) => f.get("properties"))
+          );
+        } else if (features?.length === 1) {
+          const singleFeature = features[0];
+          const properties = singleFeature.get("properties");
+          console.log("Single feature details:", properties);
+        }
+      });
+    });
   }, [policeData, error, isLoading]);
 
-  if (isLoading) {
-    return <div>Loading map data...</div>;
-  }
+  return (
+    <div style={{ position: "relative", width: "100%", height: "100vh" }}>
+      {isLoading && (
+        <div>
+          <span>Loading map data...</span>
+        </div>
+      )}
 
-  if (error) {
-    return <div>Error loading map data: {error.message}</div>;
-  }
-
-  return <div ref={mapRef} className={styles.mapContainer} />;
+      {error && (
+        <div>
+          <strong>Error loading map data:</strong> {error.message}
+          <br />
+        </div>
+      )}
+      <div ref={mapRef} className={styles.mapContainer} />
+      <FloatingFilterPanel
+        filters={filters}
+        onFiltersChange={updateFilters}
+        onClearFilters={clearFilters}
+        isLoading={isFetching}
+        totalCount={policeData.length}
+      />
+    </div>
+  );
 }
