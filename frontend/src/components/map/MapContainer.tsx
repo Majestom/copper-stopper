@@ -4,13 +4,10 @@ import TileLayer from "ol/layer/Tile";
 import OSM from "ol/source/OSM";
 import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
-import { fromLonLat } from "ol/proj";
+import { fromLonLat, toLonLat } from "ol/proj";
 import { FeatureLike } from "ol/Feature";
 import "ol/ol.css";
-import {
-  usePoliceDataClusters,
-  ClusterData,
-} from "@/hooks/usePoliceDataClusters";
+import { useMapData, ClusterData, PointData } from "@/hooks/useMapData";
 import Style from "ol/style/Style";
 import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
@@ -43,9 +40,11 @@ export default function MapContainer(props: MapContainerProps) {
     initialZoomRef.current = initialZoom;
   }, [initialZoom]);
 
-  const clusterData = usePoliceDataClusters(initialZoom);
+  const mapData = useMapData(initialZoom);
   const {
     clusters,
+    points,
+    useIndividualPoints,
     isFetching,
     isLoading,
     error,
@@ -54,93 +53,141 @@ export default function MapContainer(props: MapContainerProps) {
     updateFilters,
     clearFilters,
     updateZoom,
-  } = clusterData;
+    updateBbox,
+  } = mapData;
 
-  const updateZoomRef = useRef(updateZoom);
+  const calculateBoundingBox = useCallback((map: Map): string | undefined => {
+    try {
+      const view = map.getView();
+      const extent = view.calculateExtent(map.getSize());
+      if (!extent) return undefined;
 
-  useEffect(() => {
-    updateZoomRef.current = updateZoom;
-  }, [updateZoom]);
+      const [minX, minY, maxX, maxY] = extent;
+      const [minLng, minLat] = toLonLat([minX, minY]);
+      const [maxLng, maxLat] = toLonLat([maxX, maxY]);
 
-  const updateMapWithClusters = useCallback((newClusters: ClusterData[]) => {
+      return `${minLng},${minLat},${maxLng},${maxLat}`;
+    } catch (error) {
+      console.warn("Failed to calculate bounding box:", error);
+      return undefined;
+    }
+  }, []);
+
+  const updateBoundingBox = useCallback(() => {
     if (!mapInstanceRef.current) return;
+    const bbox = calculateBoundingBox(mapInstanceRef.current);
+    if (bbox) {
+      updateBbox(bbox);
+    }
+  }, [calculateBoundingBox, updateBbox]);
 
-    const map = mapInstanceRef.current;
+  const updateMapWithData = useCallback(
+    (
+      newClusters: ClusterData[],
+      newPoints: PointData[],
+      isIndividualPoints: boolean
+    ) => {
+      if (!mapInstanceRef.current) return;
 
-    if (vectorLayerRef.current) {
-      const source = vectorLayerRef.current.getSource();
-      if (source) {
-        source.clear();
+      const map = mapInstanceRef.current;
 
-        const features = newClusters.map((cluster: ClusterData) => {
+      if (vectorLayerRef.current) {
+        const source = vectorLayerRef.current.getSource();
+        if (source) {
+          source.clear();
+        }
+        map.removeLayer(vectorLayerRef.current);
+      }
+
+      const features: Feature[] = [];
+
+      if (isIndividualPoints && newPoints.length > 0) {
+        newPoints.forEach((point: PointData) => {
+          const feature = new Feature({
+            geometry: new Point(fromLonLat([point.longitude, point.latitude])),
+            pointData: point,
+            isIndividualPoint: true,
+          });
+          features.push(feature);
+        });
+      } else if (!isIndividualPoints && newClusters.length > 0) {
+        newClusters.forEach((cluster: ClusterData) => {
           const feature = new Feature({
             geometry: new Point(
               fromLonLat([cluster.cluster_lng, cluster.cluster_lat])
             ),
             clusterData: cluster,
+            isIndividualPoint: false,
           });
-          return feature;
+          features.push(feature);
         });
-
-        source.addFeatures(features);
-        return;
       }
-    }
 
-    if (!newClusters.length) return;
+      if (features.length === 0) return;
 
-    const features = newClusters.map((cluster: ClusterData) => {
-      const feature = new Feature({
-        geometry: new Point(
-          fromLonLat([cluster.cluster_lng, cluster.cluster_lat])
-        ),
-        clusterData: cluster,
-      });
-      return feature;
-    });
+      const vectorSource = new VectorSource({ features });
 
-    const vectorSource = new VectorSource({ features });
+      const vectorLayer = new VectorLayer({
+        source: vectorSource,
+        style: (feature: FeatureLike) => {
+          const isIndividual = feature.get("isIndividualPoint") as boolean;
 
-    const vectorLayer = new VectorLayer({
-      source: vectorSource,
-      style: (feature: FeatureLike) => {
-        const clusterData = feature.get("clusterData") as ClusterData;
-        const size = clusterData.point_count;
-
-        if (size === 1) {
-          return new Style({
-            image: new CircleStyle({
-              radius: 6,
-              fill: new Fill({ color: "rgba(255, 0, 0, 0.7)" }),
-              stroke: new Stroke({
-                color: "rgba(255, 255, 255, 0.8)",
-                width: 2,
+          if (isIndividual) {
+            return new Style({
+              image: new CircleStyle({
+                radius: 4,
+                fill: new Fill({ color: "rgba(255, 0, 0, 0.8)" }),
+                stroke: new Stroke({
+                  color: "rgba(255, 255, 255, 0.9)",
+                  width: 1.5,
+                }),
               }),
-            }),
-          });
-        }
+            });
+          } else {
+            // Style for clusters - existing cluster styling
+            const clusterData = feature.get("clusterData") as ClusterData;
+            const size = clusterData.point_count;
 
-        const radius = Math.min(Math.max(10 + size / 20, 15), 40);
-        const opacity = Math.min(0.8, 0.4 + size / 100);
+            if (size === 1) {
+              return new Style({
+                image: new CircleStyle({
+                  radius: 6,
+                  fill: new Fill({ color: "rgba(255, 0, 0, 0.7)" }),
+                  stroke: new Stroke({
+                    color: "rgba(255, 255, 255, 0.8)",
+                    width: 2,
+                  }),
+                }),
+              });
+            }
 
-        return new Style({
-          image: new CircleStyle({
-            radius: radius,
-            fill: new Fill({ color: `rgba(255, 0, 0, ${opacity})` }),
-            stroke: new Stroke({ color: "rgba(255, 255, 255, 0.8)", width: 2 }),
-          }),
-          text: new Text({
-            text: size.toString(),
-            fill: new Fill({ color: "#fff" }),
-            font: "bold 12px Arial",
-          }),
-        });
-      },
-    });
+            const radius = Math.min(Math.max(10 + size / 20, 15), 40);
+            const opacity = Math.min(0.8, 0.4 + size / 100);
 
-    vectorLayerRef.current = vectorLayer;
-    map.addLayer(vectorLayer);
-  }, []);
+            return new Style({
+              image: new CircleStyle({
+                radius: radius,
+                fill: new Fill({ color: `rgba(255, 0, 0, ${opacity})` }),
+                stroke: new Stroke({
+                  color: "rgba(255, 255, 255, 0.8)",
+                  width: 2,
+                }),
+              }),
+              text: new Text({
+                text: size.toString(),
+                fill: new Fill({ color: "#fff" }),
+                font: "bold 12px Arial",
+              }),
+            });
+          }
+        },
+      });
+
+      vectorLayerRef.current = vectorLayer;
+      map.addLayer(vectorLayer);
+    },
+    []
+  );
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -166,6 +213,7 @@ export default function MapContainer(props: MapContainerProps) {
     mapInstanceRef.current = map;
 
     let zoomTimeout: NodeJS.Timeout;
+    let moveTimeout: NodeJS.Timeout;
 
     const handleInteractionStart = () => {
       isUserInteractionRef.current = true;
@@ -177,35 +225,43 @@ export default function MapContainer(props: MapContainerProps) {
       }, 100);
     };
 
-    map.on("pointerdrag", handleInteractionStart);
-    map.getView().on("change:resolution", handleInteractionStart);
-
-    map.getView().on("change:resolution", () => {
+    const handleViewChange = () => {
       clearTimeout(zoomTimeout);
+      clearTimeout(moveTimeout);
+
       zoomTimeout = setTimeout(() => {
         const newZoom = Math.round(
           map.getView().getZoom() || initialZoomRef.current
         );
-
-        updateZoomRef.current(newZoom);
+        updateZoom(newZoom);
         handleInteractionEnd();
       }, 500);
-    });
+
+      moveTimeout = setTimeout(() => {
+        updateBoundingBox();
+      }, 1000);
+    };
+
+    map.on("pointerdrag", handleInteractionStart);
+    map.getView().on("change:resolution", handleInteractionStart);
+    map.getView().on("change:center", handleViewChange);
+    map.getView().on("change:resolution", handleViewChange);
+
+    updateBoundingBox();
 
     return () => {
       clearTimeout(zoomTimeout);
+      clearTimeout(moveTimeout);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.setTarget(undefined);
         mapInstanceRef.current = null;
       }
     };
-  }, []);
+  }, [updateZoom, updateBoundingBox]);
 
   useEffect(() => {
-    if (clusters && clusters.length > 0) {
-      updateMapWithClusters(clusters);
-    }
-  }, [clusters, updateMapWithClusters]);
+    updateMapWithData(clusters, points, useIndividualPoints);
+  }, [clusters, points, useIndividualPoints, updateMapWithData]);
 
   const showLoading =
     isFetching && (!clusters || clusters.length === 0) && !isLoading;
