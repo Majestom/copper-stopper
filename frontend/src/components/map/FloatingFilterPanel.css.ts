@@ -11,6 +11,7 @@ export const panel = style({
   left: "16px",
   zIndex: 10,
   backgroundColor: "white",
+  color: "#1f2937",
   borderRadius: "8px",
   boxShadow:
     "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
@@ -124,6 +125,8 @@ export const input = style({
   border: "1px solid #d1d5db",
   borderRadius: "6px",
   fontSize: "14px",
+  backgroundColor: "white",
+  color: "#374151",
   ":focus": {
     outline: "none",
     borderColor: "#3b82f6",
@@ -138,6 +141,7 @@ export const select = style({
   borderRadius: "6px",
   fontSize: "14px",
   backgroundColor: "white",
+  color: "#374151",
   ":focus": {
     outline: "none",
     borderColor: "#3b82f6",
@@ -211,6 +215,9 @@ export const checkbox = style({
   height: "16px",
   accentColor: "#3b82f6",
   cursor: "pointer",
+  backgroundColor: "white",
+  border: "1px solid #d1d5db",
+  borderRadius: "2px",
 });
 
 export const checkboxLabel = style({
