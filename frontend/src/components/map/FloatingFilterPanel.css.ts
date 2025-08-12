@@ -7,17 +7,18 @@ const spin = keyframes({
 
 export const panel = style({
   position: "absolute",
-  bottom: "16px",
+  top: "16px",
   left: "16px",
-  right: "16px",
+  bottom: "16px",
   zIndex: 10,
   backgroundColor: "white",
   borderRadius: "8px",
   boxShadow:
     "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
   border: "1px solid #e5e7eb",
-  maxWidth: "400px",
-  margin: "0 auto",
+  width: "340px",
+  display: "flex",
+  flexDirection: "column",
 });
 
 export const header = style({
@@ -82,6 +83,18 @@ export const content = style({
   display: "flex",
   flexDirection: "column",
   gap: "16px",
+  overflowY: "auto",
+  flex: 1,
+});
+
+export const scrollableContent = style({
+  padding: "16px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+  overflowY: "auto",
+  flex: 1,
+  maxHeight: "calc(100vh - 200px)",
 });
 
 export const fieldGroup = style({
@@ -207,7 +220,9 @@ export const totalCount = style({
   color: "#6b7280",
   fontWeight: 500,
   textAlign: "center",
-  padding: "8px",
+  padding: "12px 16px",
   borderTop: "1px solid #e5e7eb",
   backgroundColor: "#f9fafb",
+  borderRadius: "0 0 8px 8px",
+  flexShrink: 0,
 });

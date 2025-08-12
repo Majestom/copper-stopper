@@ -10,6 +10,7 @@ interface FloatingFilterPanelProps {
   totalCount?: number;
 }
 
+// Todo: bring these in from zod schemas or constants
 const TYPE_OPTIONS = [
   "Person search",
   "Vehicle search",
@@ -17,6 +18,18 @@ const TYPE_OPTIONS = [
 ];
 
 const GENDER_OPTIONS = ["Male", "Female", "Other"];
+
+const AGE_RANGE_OPTIONS = ["under 10", "10-17", "18-24", "25-34", "over 34"];
+
+const OUTCOME_OPTIONS = [
+  "Nothing found - no further action",
+  "Arrest",
+  "Caution (simple or conditional)",
+  "Penalty Notice for Disorder",
+  "Community service penalty",
+  "Khat or Cannabis warning",
+  "Summons / charged by post",
+];
 
 export default function FloatingFilterPanel({
   filters,
@@ -27,6 +40,7 @@ export default function FloatingFilterPanel({
 }: FloatingFilterPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // Get active filters (excluding bbox)
   const activeFilters = Object.entries(filters)
     .filter(
       ([key, value]) => key !== "bbox" && value && value.toString().trim()
@@ -77,8 +91,9 @@ export default function FloatingFilterPanel({
       case "dateTo":
         return `To: ${value}`;
       case "type":
-        return value.split(",").join(", ");
       case "gender":
+      case "ageRange":
+      case "outcome":
         return value.split(",").join(", ");
       default:
         return `${key}: ${value}`;
@@ -123,7 +138,7 @@ export default function FloatingFilterPanel({
       )}
 
       {isExpanded && (
-        <div className={styles.content}>
+        <div className={styles.scrollableContent}>
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Date Range</label>
             <div className={styles.dateGrid}>
@@ -183,6 +198,56 @@ export default function FloatingFilterPanel({
                   />
                   <label
                     htmlFor={`gender-${option}`}
+                    className={styles.checkboxLabel}
+                  >
+                    {option}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Age Range</label>
+            <div className={styles.checkboxGroup}>
+              {AGE_RANGE_OPTIONS.map((option) => (
+                <div key={option} className={styles.checkboxItem}>
+                  <input
+                    type="checkbox"
+                    id={`ageRange-${option}`}
+                    checked={isOptionChecked("ageRange", option)}
+                    onChange={(e) =>
+                      handleCheckboxChange("ageRange", option, e.target.checked)
+                    }
+                    className={styles.checkbox}
+                  />
+                  <label
+                    htmlFor={`ageRange-${option}`}
+                    className={styles.checkboxLabel}
+                  >
+                    {option}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Outcome</label>
+            <div className={styles.checkboxGroup}>
+              {OUTCOME_OPTIONS.map((option) => (
+                <div key={option} className={styles.checkboxItem}>
+                  <input
+                    type="checkbox"
+                    id={`outcome-${option}`}
+                    checked={isOptionChecked("outcome", option)}
+                    onChange={(e) =>
+                      handleCheckboxChange("outcome", option, e.target.checked)
+                    }
+                    className={styles.checkbox}
+                  />
+                  <label
+                    htmlFor={`outcome-${option}`}
                     className={styles.checkboxLabel}
                   >
                     {option}
