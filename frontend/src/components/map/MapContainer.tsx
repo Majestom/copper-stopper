@@ -1,5 +1,6 @@
-import { useEffect, useRef, useCallback } from "react";
-import { Map, View } from "ol";
+import { useEffect, useRef, useCallback, useState } from "react";
+import { createPortal } from "react-dom";
+import { Map, View, Overlay } from "ol";
 import TileLayer from "ol/layer/Tile";
 import OSM from "ol/source/OSM";
 import Feature from "ol/Feature";
@@ -20,6 +21,7 @@ import {
   MapContainerPropsSchema,
 } from "../../schemas/mapSchemas";
 import FloatingFilterPanel from "./FloatingFilterPanel";
+import { StopSearchPopup } from "./StopSearchPopup";
 import * as styles from "./MapContainer.css";
 
 export default function MapContainer(props: MapContainerProps) {
@@ -28,9 +30,57 @@ export default function MapContainer(props: MapContainerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<Map | null>(null);
   const vectorLayerRef = useRef<VectorLayer | null>(null);
+  const overlayRef = useRef<Overlay | null>(null);
+  const popupContainerRef = useRef<HTMLDivElement | null>(null);
   const centreRef = useRef(centre);
   const initialZoomRef = useRef(initialZoom);
   const isUserInteractionRef = useRef(false);
+
+  const [popupData, setPopupData] = useState<PointData | null>(null);
+  const [popupCoordinate, setPopupCoordinate] = useState<
+    [number, number] | null
+  >(null);
+
+  useEffect(() => {
+    if (!popupContainerRef.current) {
+      popupContainerRef.current = document.createElement("div");
+      popupContainerRef.current.style.cssText = `
+        position: absolute;
+        pointer-events: auto;
+        z-index: 1000;
+      `;
+    }
+
+    return () => {
+      if (popupContainerRef.current && popupContainerRef.current.parentNode) {
+        popupContainerRef.current.parentNode.removeChild(
+          popupContainerRef.current
+        );
+      }
+    };
+  }, []);
+
+  const closePopup = useCallback(() => {
+    setPopupData(null);
+    setPopupCoordinate(null);
+
+    if (overlayRef.current && mapInstanceRef.current) {
+      try {
+        mapInstanceRef.current.removeOverlay(overlayRef.current);
+      } catch (error) {
+        console.warn("Error removing overlay:", error);
+      }
+      overlayRef.current = null;
+    }
+  }, []);
+
+  const openPopup = useCallback(
+    (data: PointData, coordinate: [number, number]) => {
+      setPopupData(data);
+      setPopupCoordinate(coordinate);
+    },
+    []
+  );
 
   useEffect(() => {
     centreRef.current = centre;
@@ -135,16 +185,15 @@ export default function MapContainer(props: MapContainerProps) {
           if (isIndividual) {
             return new Style({
               image: new CircleStyle({
-                radius: 4,
-                fill: new Fill({ color: "rgba(255, 0, 0, 0.8)" }),
+                radius: 5,
+                fill: new Fill({ color: "rgba(220, 38, 38, 0.9)" }),
                 stroke: new Stroke({
-                  color: "rgba(255, 255, 255, 0.9)",
-                  width: 1.5,
+                  color: "rgba(255, 255, 255, 1)",
+                  width: 2,
                 }),
               }),
             });
           } else {
-            // Style for clusters - existing cluster styling
             const clusterData = feature.get("clusterData") as ClusterData;
             const size = clusterData.point_count;
 
@@ -242,26 +291,108 @@ export default function MapContainer(props: MapContainerProps) {
       }, 1000);
     };
 
+    const handleMapClick = (evt: { pixel: number[]; coordinate: number[] }) => {
+      const feature = map.forEachFeatureAtPixel(
+        evt.pixel,
+        (feature) => feature
+      );
+      if (feature) {
+        const isIndividual = feature.get("isIndividualPoint") as boolean;
+        if (isIndividual) {
+          const pointData = feature.get("pointData") as PointData;
+          const coordinate = evt.coordinate as [number, number];
+          openPopup(pointData, coordinate);
+        } else {
+          closePopup();
+        }
+      } else {
+        closePopup();
+      }
+    };
+
+    map.on("click", handleMapClick);
     map.on("pointerdrag", handleInteractionStart);
     map.getView().on("change:resolution", handleInteractionStart);
     map.getView().on("change:center", handleViewChange);
     map.getView().on("change:resolution", handleViewChange);
+
+    map.on("pointermove", (evt) => {
+      const pixel = map.getEventPixel(evt.originalEvent);
+      const feature = map.forEachFeatureAtPixel(pixel, (feature) => feature);
+      const target = map.getTarget() as HTMLElement;
+
+      if (feature && feature.get("isIndividualPoint")) {
+        target.style.cursor = "pointer";
+      } else {
+        target.style.cursor = "";
+      }
+    });
 
     updateBoundingBox();
 
     return () => {
       clearTimeout(zoomTimeout);
       clearTimeout(moveTimeout);
+      closePopup();
+
       if (mapInstanceRef.current) {
         mapInstanceRef.current.setTarget(undefined);
         mapInstanceRef.current = null;
       }
     };
-  }, [updateZoom, updateBoundingBox]);
+  }, [updateZoom, updateBoundingBox, openPopup, closePopup]);
 
   useEffect(() => {
     updateMapWithData(clusters, points, useIndividualPoints);
   }, [clusters, points, useIndividualPoints, updateMapWithData]);
+
+  useEffect(() => {
+    if (
+      !mapInstanceRef.current ||
+      !popupData ||
+      !popupCoordinate ||
+      !popupContainerRef.current
+    ) {
+      return;
+    }
+
+    const map = mapInstanceRef.current;
+
+    if (overlayRef.current) {
+      try {
+        map.removeOverlay(overlayRef.current);
+      } catch (error) {
+        console.warn("Error removing overlay:", error);
+      }
+      overlayRef.current = null;
+    }
+
+    const overlay = new Overlay({
+      element: popupContainerRef.current,
+      positioning: "bottom-center",
+      stopEvent: false,
+      offset: [0, -15],
+    });
+
+    try {
+      overlay.setPosition(popupCoordinate);
+      map.addOverlay(overlay);
+      overlayRef.current = overlay;
+    } catch (error) {
+      console.warn("Error creating overlay:", error);
+    }
+
+    return () => {
+      if (overlayRef.current) {
+        try {
+          map.removeOverlay(overlayRef.current);
+        } catch (error) {
+          console.warn("Error in overlay cleanup:", error);
+        }
+        overlayRef.current = null;
+      }
+    };
+  }, [popupData, popupCoordinate]);
 
   const showLoading =
     isFetching && (!clusters || clusters.length === 0) && !isLoading;
@@ -294,6 +425,14 @@ export default function MapContainer(props: MapContainerProps) {
         </div>
       )}
       <div ref={mapRef} className={styles.mapContainer} />
+
+      {popupData &&
+        popupContainerRef.current &&
+        createPortal(
+          <StopSearchPopup data={popupData} onClose={closePopup} />,
+          popupContainerRef.current
+        )}
+
       <FloatingFilterPanel
         filters={filters}
         onFiltersChange={updateFilters}

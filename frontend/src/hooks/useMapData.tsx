@@ -27,10 +27,20 @@ export interface PointData {
   type: string;
   age_range: string | null;
   gender: string | null;
+  self_defined_ethnicity: string | null;
+  officer_defined_ethnicity: string | null;
+  legislation: string | null;
+  object_of_search: string | null;
+  outcome: string | null;
+  outcome_linked_to_object_of_search: boolean | null;
+  removal_of_more_than_outer_clothing: boolean | null;
   latitude: number;
   longitude: number;
-  outcome: string | null;
   street_name: string | null;
+  involved_person: boolean | null;
+  operation: boolean | null;
+  operation_name: string | null;
+  force: string;
 }
 
 interface ClusterResponse {
