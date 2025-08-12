@@ -9,7 +9,6 @@ export const panel = style({
   position: "absolute",
   top: "16px",
   left: "16px",
-  bottom: "16px",
   zIndex: 10,
   backgroundColor: "white",
   borderRadius: "8px",
@@ -19,6 +18,7 @@ export const panel = style({
   width: "340px",
   display: "flex",
   flexDirection: "column",
+  maxHeight: "calc(100vh - 32px)",
 });
 
 export const header = style({
@@ -30,6 +30,7 @@ export const header = style({
   borderBottom: "1px solid #e5e7eb",
   cursor: "pointer",
   borderRadius: "8px 8px 0 0",
+  flexShrink: 0,
   ":hover": {
     backgroundColor: "#f3f4f6",
   },
@@ -83,8 +84,6 @@ export const content = style({
   display: "flex",
   flexDirection: "column",
   gap: "16px",
-  overflowY: "auto",
-  flex: 1,
 });
 
 export const scrollableContent = style({
@@ -94,7 +93,7 @@ export const scrollableContent = style({
   gap: "16px",
   overflowY: "auto",
   flex: 1,
-  maxHeight: "calc(100vh - 200px)",
+  minHeight: 0,
 });
 
 export const fieldGroup = style({
@@ -224,5 +223,5 @@ export const totalCount = style({
   borderTop: "1px solid #e5e7eb",
   backgroundColor: "#f9fafb",
   borderRadius: "0 0 8px 8px",
-  flexShrink: 0,
+  flexShrink: 0, // Prevent this from shrinking
 });
