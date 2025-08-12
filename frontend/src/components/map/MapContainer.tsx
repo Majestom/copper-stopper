@@ -32,7 +32,6 @@ export default function MapContainer(props: MapContainerProps) {
   const mapInstanceRef = useRef<Map | null>(null);
   const vectorLayerRef = useRef<VectorLayer | null>(null);
 
-  // Use the hook for ALL data management
   const clusterData = usePoliceDataClusters(initialZoom);
   const {
     clusters,
@@ -46,28 +45,23 @@ export default function MapContainer(props: MapContainerProps) {
     updateZoom,
   } = clusterData;
 
-  // Ref to always have the latest updateZoom function
   const updateZoomRef = useRef(updateZoom);
 
-  // Keep ref current whenever updateZoom changes
   useEffect(() => {
     updateZoomRef.current = updateZoom;
   }, [updateZoom]);
 
-  // Function to update map visual layers
   const updateMapWithClusters = useCallback((newClusters: ClusterData[]) => {
     if (!mapInstanceRef.current) return;
 
     const map = mapInstanceRef.current;
 
-    // Remove existing layer
     if (vectorLayerRef.current) {
       map.removeLayer(vectorLayerRef.current);
     }
 
     if (!newClusters.length) return;
 
-    // Create features from clusters
     const features = newClusters.map((cluster: ClusterData) => {
       const feature = new Feature({
         geometry: new Point(
@@ -121,7 +115,6 @@ export default function MapContainer(props: MapContainerProps) {
     map.addLayer(vectorLayer);
   }, []);
 
-  // SEPARATE EFFECT 1: Map initialization - TRULY ONCE ONLY
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
@@ -142,14 +135,12 @@ export default function MapContainer(props: MapContainerProps) {
 
     mapInstanceRef.current = map;
 
-    // Handle zoom changes - use the ref to access latest updateZoom
     let zoomTimeout: NodeJS.Timeout;
     map.getView().on("change:resolution", () => {
       clearTimeout(zoomTimeout);
       zoomTimeout = setTimeout(() => {
         const newZoom = Math.round(map.getView().getZoom() || initialZoom);
 
-        // Use ref to always get latest updateZoom function
         updateZoomRef.current(newZoom);
       }, 300);
     });
@@ -162,9 +153,8 @@ export default function MapContainer(props: MapContainerProps) {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Initialize only once - ignore centre/initialZoom dependencies
+  }, []);
 
-  // SEPARATE EFFECT 2: Handle centre changes without recreating map
   useEffect(() => {
     if (mapInstanceRef.current) {
       const view = mapInstanceRef.current.getView();
@@ -172,7 +162,6 @@ export default function MapContainer(props: MapContainerProps) {
     }
   }, [centre]);
 
-  // SEPARATE EFFECT 3: Data updates - when hook provides new clusters
   useEffect(() => {
     if (clusters && clusters.length > 0) {
       updateMapWithClusters(clusters);
