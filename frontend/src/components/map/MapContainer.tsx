@@ -46,6 +46,7 @@ export default function MapContainer(props: MapContainerProps) {
   const {
     clusters,
     isFetching,
+    isLoading,
     error,
     filters,
     totalPoints,
@@ -182,13 +183,14 @@ export default function MapContainer(props: MapContainerProps) {
     }
   }, [clusters, updateMapWithClusters]);
 
+  const showLoading =
+    isFetching && (!clusters || clusters.length === 0) && !isLoading;
+
   return (
     <div style={{ position: "relative", width: "100%", height: "100vh" }}>
-      {error && (
+      {showLoading && (
         <div className={styles.overlayContainer}>
-          <div className={styles.errorMessage}>
-            <strong>Error loading map data:</strong> {error.message}
-          </div>
+          <div>Loading map data...</div>
         </div>
       )}
       <div ref={mapRef} className={styles.mapContainer} />
