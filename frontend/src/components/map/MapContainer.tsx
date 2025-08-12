@@ -35,7 +35,6 @@ export default function MapContainer(props: MapContainerProps) {
   const clusterData = usePoliceDataClusters(initialZoom);
   const {
     clusters,
-    isLoading,
     isFetching,
     error,
     filters,
@@ -170,14 +169,6 @@ export default function MapContainer(props: MapContainerProps) {
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100vh" }}>
-      {isLoading && (
-        <div className={styles.overlayContainer}>
-          <div className={styles.loadingMessage}>
-            <span>Loading map data...</span>
-          </div>
-        </div>
-      )}
-
       {error && (
         <div className={styles.overlayContainer}>
           <div className={styles.errorMessage}>
