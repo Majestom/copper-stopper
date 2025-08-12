@@ -19,6 +19,11 @@ export const panel = style({
   display: "flex",
   flexDirection: "column",
   maxHeight: "calc(100vh - 32px)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      top: "80px", // Push down on mobile to avoid hamburger menu
+    },
+  },
 });
 
 export const header = style({
