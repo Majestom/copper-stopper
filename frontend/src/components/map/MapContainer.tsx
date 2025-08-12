@@ -66,6 +66,10 @@ export default function MapContainer(props: MapContainerProps) {
     const map = mapInstanceRef.current;
 
     if (vectorLayerRef.current) {
+      const source = vectorLayerRef.current.getSource();
+      if (source) {
+        source.clear();
+      }
       map.removeLayer(vectorLayerRef.current);
     }
 
