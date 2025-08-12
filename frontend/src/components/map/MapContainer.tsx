@@ -27,7 +27,8 @@ function getClusterDistance(zoom: number): number {
   if (zoom <= 10) return 100;
   if (zoom <= 12) return 60;
   if (zoom <= 14) return 40;
-  return 20;
+  if (zoom >= 17) return 10;
+  return 0;
 }
 
 function getClusterStyle(feature: FeatureLike, _resolution: number) {
