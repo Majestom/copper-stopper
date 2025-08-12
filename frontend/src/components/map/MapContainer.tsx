@@ -188,6 +188,13 @@ export default function MapContainer(props: MapContainerProps) {
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100vh" }}>
+      {error && (
+        <div className={styles.overlayContainer}>
+          <div className={styles.errorMessage}>
+            <strong>Error loading map data:</strong> {error.message}
+          </div>
+        </div>
+      )}
       {showLoading && (
         <div className={styles.overlayContainer}>
           <div>Loading map data...</div>
