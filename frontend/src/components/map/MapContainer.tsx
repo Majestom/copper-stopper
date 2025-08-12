@@ -6,7 +6,7 @@ import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
 import { fromLonLat } from "ol/proj";
 import "ol/ol.css";
-import { useBasicPoliceData } from "@/hooks/useBasicPoliceData";
+import { usePoliceDataForMap } from "@/hooks/usePoliceDataForMap";
 import { StopSearchRecord } from "@/schemas/dbSchemas";
 import Style from "ol/style/Style";
 import Fill from "ol/style/Fill";
@@ -23,7 +23,9 @@ import * as styles from "./MapContainer.css";
 export default function MapContainer(props: MapContainerProps) {
   const { width, height, centre, zoom } = MapContainerPropsSchema.parse(props);
 
-  const { data: policeData, isLoading, error } = useBasicPoliceData();
+  const { data: policeData, isLoading, error } = usePoliceDataForMap({});
+
+  console.log("policeData:", policeData);
 
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<Map | null>(null);
