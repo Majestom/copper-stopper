@@ -31,6 +31,16 @@ export default function MapContainer(props: MapContainerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<Map | null>(null);
   const vectorLayerRef = useRef<VectorLayer | null>(null);
+  const centreRef = useRef(centre);
+  const initialZoomRef = useRef(initialZoom);
+
+  useEffect(() => {
+    centreRef.current = centre;
+  }, [centre]);
+
+  useEffect(() => {
+    initialZoomRef.current = initialZoom;
+  }, [initialZoom]);
 
   const clusterData = usePoliceDataClusters(initialZoom);
   const {
@@ -125,8 +135,8 @@ export default function MapContainer(props: MapContainerProps) {
         }),
       ],
       view: new View({
-        center: fromLonLat(centre),
-        zoom: initialZoom,
+        center: fromLonLat(centreRef.current),
+        zoom: initialZoomRef.current,
         constrainResolution: true,
       }),
       controls: [],
@@ -138,7 +148,9 @@ export default function MapContainer(props: MapContainerProps) {
     map.getView().on("change:resolution", () => {
       clearTimeout(zoomTimeout);
       zoomTimeout = setTimeout(() => {
-        const newZoom = Math.round(map.getView().getZoom() || initialZoom);
+        const newZoom = Math.round(
+          map.getView().getZoom() || initialZoomRef.current
+        );
 
         updateZoomRef.current(newZoom);
       }, 300);
@@ -151,7 +163,6 @@ export default function MapContainer(props: MapContainerProps) {
         mapInstanceRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
