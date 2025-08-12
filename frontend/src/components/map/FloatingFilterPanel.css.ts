@@ -106,12 +106,27 @@ export const fieldGroup = style({
   display: "flex",
   flexDirection: "column",
   gap: "8px",
+  border: "none",
+  padding: 0,
+  margin: 0,
+  minWidth: 0,
 });
 
 export const label = style({
   fontSize: "14px",
   fontWeight: 500,
   color: "#374151",
+});
+
+export const legend = style({
+  fontSize: "14px",
+  fontWeight: 500,
+  color: "#374151",
+  padding: 0,
+  margin: 0,
+  marginBottom: "8px",
+  display: "block",
+  width: "100%",
 });
 
 export const dateGrid = style({

@@ -101,25 +101,67 @@ export default function FloatingFilterPanel({
   };
 
   return (
-    <div className={styles.panel}>
-      <div className={styles.header} onClick={() => setIsExpanded(!isExpanded)}>
+    <div className={styles.panel} role="region" aria-label="Map data filters">
+      <div
+        className={styles.header}
+        onClick={() => setIsExpanded(!isExpanded)}
+        role="button"
+        tabIndex={0}
+        aria-expanded={isExpanded}
+        aria-controls="filter-content"
+        aria-label={`Filter panel ${
+          isExpanded ? "expanded" : "collapsed"
+        }. ${activeFilterCount} filters active.`}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setIsExpanded(!isExpanded);
+          }
+        }}
+      >
         <div className={styles.headerLeft}>
           <span className={styles.title}>Filters</span>
           {activeFilterCount > 0 && (
-            <span className={styles.badge}>{activeFilterCount}</span>
+            <span
+              className={styles.badge}
+              aria-label={`${activeFilterCount} active filters`}
+            >
+              {activeFilterCount}
+            </span>
           )}
         </div>
         <div className={styles.headerRight}>
-          {isLoading && <div className={styles.spinner}></div>}
-          <span className={styles.expandIcon}>{isExpanded ? "−" : "+"}</span>
+          {isLoading && (
+            <div
+              className={styles.spinner}
+              aria-label="Loading filter results"
+              role="status"
+            />
+          )}
+          <span className={styles.expandIcon} aria-hidden="true">
+            {isExpanded ? "−" : "+"}
+          </span>
         </div>
       </div>
 
       {activeFilterCount > 0 && !isExpanded && (
-        <div className={styles.content}>
+        <div
+          className={styles.content}
+          id="filter-content"
+          role="region"
+          aria-label="Active filters"
+        >
           <div className={styles.activeFilters}>
             {activeFilters.map(({ key, value }) => (
-              <div key={key} className={styles.activeFilterTag}>
+              <div
+                key={key}
+                className={styles.activeFilterTag}
+                role="group"
+                aria-label={`Active filter: ${getFilterDisplayName(
+                  key,
+                  value
+                )}`}
+              >
                 {getFilterDisplayName(key, value)}
                 <button
                   className={styles.removeFilterButton}
@@ -127,6 +169,7 @@ export default function FloatingFilterPanel({
                     e.stopPropagation();
                     removeFilter(key);
                   }}
+                  aria-label={`Remove ${key} filter`}
                   title={`Remove ${key} filter`}
                 >
                   ×
@@ -138,7 +181,12 @@ export default function FloatingFilterPanel({
       )}
 
       {isExpanded && (
-        <div className={styles.scrollableContent}>
+        <div
+          className={styles.scrollableContent}
+          id="filter-content"
+          role="form"
+          aria-label="Filter options"
+        >
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Date Range</label>
             <div className={styles.dateGrid}>
@@ -147,19 +195,25 @@ export default function FloatingFilterPanel({
                 value={filters.dateFrom || ""}
                 onChange={(e) => handleFilterChange("dateFrom", e.target.value)}
                 className={styles.input}
+                aria-label="Filter from date"
               />
               <input
                 type="date"
                 value={filters.dateTo || ""}
                 onChange={(e) => handleFilterChange("dateTo", e.target.value)}
                 className={styles.input}
+                aria-label="Filter to date"
               />
             </div>
           </div>
 
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Type</label>
-            <div className={styles.checkboxGroup}>
+          <fieldset className={styles.fieldGroup}>
+            <legend className={styles.legend}>Type</legend>
+            <div
+              className={styles.checkboxGroup}
+              role="group"
+              aria-labelledby="type-legend"
+            >
               {TYPE_OPTIONS.map((option) => (
                 <div key={option} className={styles.checkboxItem}>
                   <input
@@ -180,11 +234,15 @@ export default function FloatingFilterPanel({
                 </div>
               ))}
             </div>
-          </div>
+          </fieldset>
 
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Gender</label>
-            <div className={styles.checkboxGroup}>
+          <fieldset className={styles.fieldGroup}>
+            <legend className={styles.legend}>Gender</legend>
+            <div
+              className={styles.checkboxGroup}
+              role="group"
+              aria-labelledby="gender-legend"
+            >
               {GENDER_OPTIONS.map((option) => (
                 <div key={option} className={styles.checkboxItem}>
                   <input
@@ -205,11 +263,15 @@ export default function FloatingFilterPanel({
                 </div>
               ))}
             </div>
-          </div>
+          </fieldset>
 
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Age Range</label>
-            <div className={styles.checkboxGroup}>
+          <fieldset className={styles.fieldGroup}>
+            <legend className={styles.legend}>Age Range</legend>
+            <div
+              className={styles.checkboxGroup}
+              role="group"
+              aria-labelledby="ageRange-legend"
+            >
               {AGE_RANGE_OPTIONS.map((option) => (
                 <div key={option} className={styles.checkboxItem}>
                   <input
@@ -230,11 +292,15 @@ export default function FloatingFilterPanel({
                 </div>
               ))}
             </div>
-          </div>
+          </fieldset>
 
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Outcome</label>
-            <div className={styles.checkboxGroup}>
+          <fieldset className={styles.fieldGroup}>
+            <legend className={styles.legend}>Outcome</legend>
+            <div
+              className={styles.checkboxGroup}
+              role="group"
+              aria-labelledby="outcome-legend"
+            >
               {OUTCOME_OPTIONS.map((option) => (
                 <div key={option} className={styles.checkboxItem}>
                   <input
@@ -255,22 +321,32 @@ export default function FloatingFilterPanel({
                 </div>
               ))}
             </div>
-          </div>
+          </fieldset>
 
           <button
             onClick={onClearFilters}
             disabled={activeFilterCount === 0}
             className={styles.clearButton}
+            aria-label={`Clear all ${activeFilterCount} active filters`}
           >
             Clear All Filters ({activeFilterCount})
           </button>
         </div>
       )}
 
-      <div className={styles.totalCount}>
+      <div
+        className={styles.totalCount}
+        role="status"
+        aria-live="polite"
+        aria-label={
+          isLoading
+            ? "Loading results"
+            : `Showing ${totalCount?.toLocaleString() || 0} results on map`
+        }
+      >
         {isLoading
           ? "Loading..."
-          : `Showing ${totalCount.toLocaleString()} results`}
+          : `Showing ${totalCount?.toLocaleString() || 0} results`}
       </div>
     </div>
   );

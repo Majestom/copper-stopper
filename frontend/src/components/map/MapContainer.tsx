@@ -187,16 +187,29 @@ export default function MapContainer(props: MapContainerProps) {
     isFetching && (!clusters || clusters.length === 0) && !isLoading;
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100vh" }}>
+    <div
+      style={{ position: "relative", width: "100%", height: "100vh" }}
+      role="application"
+      aria-label="Interactive police data map"
+    >
       {error && (
-        <div className={styles.overlayContainer}>
+        <div
+          className={styles.overlayContainer}
+          role="alert"
+          aria-live="assertive"
+        >
           <div className={styles.errorMessage}>
             <strong>Error loading map data:</strong> {error.message}
           </div>
         </div>
       )}
       {showLoading && (
-        <div className={styles.overlayContainer}>
+        <div
+          className={styles.overlayContainer}
+          role="status"
+          aria-live="polite"
+          aria-label="Loading map data"
+        >
           <div>Loading map data...</div>
         </div>
       )}
