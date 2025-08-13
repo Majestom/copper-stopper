@@ -94,3 +94,20 @@ export type FetchDataParams = {
   bbox?: string;
   useIndividualPoints?: boolean;
 };
+
+const ClusterFiltersSchema = z.object({
+  type: z.string().optional(),
+  gender: z.string().optional(),
+  ageRange: z.string().optional(),
+  outcome: z.string().optional(),
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+});
+
+export type ClusterFilters = z.infer<typeof ClusterFiltersSchema>;
+
+export type FetchClusterDataParams = {
+  filters: ClusterFilters;
+  zoom: number;
+  bbox?: string;
+};

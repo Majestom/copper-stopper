@@ -1,22 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getDatabase } from "../../lib/database";
-import { StopSearchRecordSchema } from "../../schemas/dbSchemas";
+import { getDatabase } from "@/lib/database";
+import { StopSearchRecordSchema } from "@/schemas/dbSchemas";
 import { Database } from "better-sqlite3";
-
-interface QueryParams {
-  page: number;
-  pageSize: number;
-  sortField?: string;
-  sortDirection?: "asc" | "desc";
-  search?: string;
-  type?: string;
-  gender?: string;
-  ageRange?: string;
-  outcome?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  skipCount?: boolean;
-}
+import { QueryParams } from "@/schemas/analyticsSchemas";
 
 function parseQueryParams(query: NextApiRequest["query"]): QueryParams {
   const page = Math.max(1, parseInt(query.page as string) || 1);

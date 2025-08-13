@@ -1,29 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getDatabase } from "../../lib/database";
-import { z } from "zod";
-
-const ClusterQueryParamsSchema = z.object({
-  zoom: z.number().min(1).max(20).default(10),
-  bbox: z.string().optional(), // "minLng,minLat,maxLng,maxLat"
-  type: z.string().optional(),
-  gender: z.string().optional(),
-  ageRange: z.string().optional(),
-  outcome: z.string().optional(),
-  dateFrom: z.string().optional(),
-  dateTo: z.string().optional(),
-});
-
-type ClusterQueryParams = z.infer<typeof ClusterQueryParamsSchema>;
-
-interface ClusterResult {
-  cluster_lat: number;
-  cluster_lng: number;
-  point_count: number;
-  bounds_min_lat: number;
-  bounds_max_lat: number;
-  bounds_min_lng: number;
-  bounds_max_lng: number;
-}
+import {
+  ClusterQueryParamsSchema,
+  ClusterQueryParams,
+  ClusterResult,
+} from "@/schemas/analyticsSchemas";
 
 function parseClusterQueryParams(
   query: NextApiRequest["query"]

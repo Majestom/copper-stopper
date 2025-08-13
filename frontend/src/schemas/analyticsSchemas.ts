@@ -49,3 +49,41 @@ export type MonthlyStats = z.infer<typeof MonthlyStatsSchema>;
 export type CategoryStats = z.infer<typeof CategoryStatsSchema>;
 export type EthnicityTrend = z.infer<typeof EthnicityTrendSchema>;
 export type AnalyticsResponse = z.infer<typeof AnalyticsResponseSchema>;
+
+export const ClusterQueryParamsSchema = z.object({
+  zoom: z.number().min(1).max(20).default(10),
+  bbox: z.string().optional(), // "minLng,minLat,maxLng,maxLat"
+  type: z.string().optional(),
+  gender: z.string().optional(),
+  ageRange: z.string().optional(),
+  outcome: z.string().optional(),
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+});
+
+export type ClusterQueryParams = z.infer<typeof ClusterQueryParamsSchema>;
+
+export type ClusterResult = {
+  cluster_lat: number;
+  cluster_lng: number;
+  point_count: number;
+  bounds_min_lat: number;
+  bounds_max_lat: number;
+  bounds_min_lng: number;
+  bounds_max_lng: number;
+};
+
+export type QueryParams = {
+  page: number;
+  pageSize: number;
+  sortField?: string;
+  sortDirection?: "asc" | "desc";
+  search?: string;
+  type?: string;
+  gender?: string;
+  ageRange?: string;
+  outcome?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  skipCount?: boolean;
+};

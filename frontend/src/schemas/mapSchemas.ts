@@ -1,5 +1,6 @@
 import { MapFilters } from "@/hooks/usePoliceDataForMap";
 import { z } from "zod";
+import { PointData } from "./hookSchemas";
 
 export const MapContainerPropsSchema = z.object({
   width: z.string().default("100%"),
@@ -17,4 +18,9 @@ export type FloatingFilterPanelProps = {
   onClearFilters: () => void;
   isLoading?: boolean;
   totalCount?: number;
+};
+
+export type StopSearchPopupProps = {
+  data: PointData;
+  onClose: () => void;
 };

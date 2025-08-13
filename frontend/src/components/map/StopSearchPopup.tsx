@@ -1,11 +1,6 @@
 import React from "react";
-import { PointData } from "@/hooks/useMapData";
+import { StopSearchPopupProps } from "@/schemas/mapSchemas";
 import * as styles from "./StopSearchPopup.css";
-
-interface StopSearchPopupProps {
-  data: PointData;
-  onClose: () => void;
-}
 
 export function StopSearchPopup({ data, onClose }: StopSearchPopupProps) {
   const formatDate = (dateString: string): string => {

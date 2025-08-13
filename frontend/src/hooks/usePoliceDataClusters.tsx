@@ -1,47 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo, useCallback } from "react";
-import { z } from "zod";
-
-const ClusterFiltersSchema = z.object({
-  type: z.string().optional(),
-  gender: z.string().optional(),
-  ageRange: z.string().optional(),
-  outcome: z.string().optional(),
-  dateFrom: z.string().optional(),
-  dateTo: z.string().optional(),
-});
-
-type ClusterFilters = z.infer<typeof ClusterFiltersSchema>;
-
-interface ClusterData {
-  cluster_lat: number;
-  cluster_lng: number;
-  point_count: number;
-  bounds_min_lat: number;
-  bounds_max_lat: number;
-  bounds_min_lng: number;
-  bounds_max_lng: number;
-}
-
-interface ClusterResponse {
-  clusters: ClusterData[];
-  meta: {
-    zoom: number;
-    precision: number;
-    clusterCount: number;
-    pointsRepresented: number;
-    totalPoints: number;
-    bbox?: string;
-    queryType: string;
-  };
-  filters: ClusterFilters;
-}
-
-type FetchClusterDataParams = {
-  filters: ClusterFilters;
-  zoom: number;
-  bbox?: string;
-};
+import {
+  ClusterFilters,
+  FetchClusterDataParams,
+  ClusterResponse,
+} from "../schemas/hookSchemas";
 
 async function fetchClusterData({
   filters,
@@ -135,5 +98,3 @@ export function usePoliceDataClusters(initialZoom: number = 10) {
     refetch: query.refetch,
   };
 }
-
-export type { ClusterFilters, ClusterData };
