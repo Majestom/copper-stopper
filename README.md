@@ -144,3 +144,165 @@ For local development without Docker:
    ```
 
 **Note**: The initial database population may take several minutes. Please be patient while the system fetches and processes the latest police data.
+
+## Accessibility & Performance
+
+### 🌐 Web Accessibility (WCAG 2.1 AA Compliance)
+
+Copper Stopper is built with accessibility as a core principle, implementing comprehensive WCAG 2.1 AA guidelines:
+
+#### **Semantic HTML & ARIA**
+
+- **Semantic Structure**: All components use proper HTML5 semantic elements (`<main>`, `<nav>`, `<section>`, `<article>`)
+- **ARIA Labels**: Comprehensive aria-label, aria-describedby, and aria-live attributes for dynamic content
+- **Screen Reader Support**: Hidden descriptions and live regions for status updates
+- **Role Definitions**: Proper ARIA roles for complex components (tables, navigation, forms)
+
+```typescript
+// Example: DataTable with full accessibility
+<table
+  role="table"
+  aria-label="Police stop and search records"
+  aria-describedby="table-description"
+>
+  <caption className={styles.visuallyHidden}>
+    Table showing police stop and search records with sortable columns.
+  </caption>
+```
+
+#### **Keyboard Navigation**
+
+- **Full Keyboard Access**: All interactive elements accessible via keyboard
+- **Focus Management**: Visible focus indicators and logical tab order
+- **Skip Links**: Screen reader navigation shortcuts
+- **Button Semantics**: Proper button elements for interactive controls
+
+### ⚡ Performance Optimization
+
+#### **Data Loading Strategies**
+
+- **Intelligent Map Clustering**: Switches between clustered (zoom < 16) and individual point APIs
+- **Bounding Box Optimization**: Only loads data for visible map areas
+- **Pagination**: Large datasets split into manageable chunks (100 records per page)
+- **Debounced Search**: 300ms delay prevents excessive API calls during typing
+
+```typescript
+// Example: Debounced search implementation
+useEffect(() => {
+  const timeoutId = setTimeout(() => {
+    if (searchInput !== currentFilters.search) {
+      onFilter({ search: searchInput });
+    }
+  }, 300);
+  return () => clearTimeout(timeoutId);
+}, [searchInput, onFilter, currentFilters.search]);
+```
+
+#### **Caching & State Management**
+
+- **React Query**: Intelligent caching with stale-while-revalidate strategy
+- **Background Updates**: Data refreshes without blocking UI
+- **Cache Invalidation**: Smart cache management for data consistency
+- **Optimistic Updates**: Immediate UI feedback while API calls complete
+
+#### **Bundle Optimization**
+
+- **Code Splitting**: Pages and components loaded on demand
+- **Tree Shaking**: Unused code eliminated from bundles
+- **CSS-in-TypeScript**: Vanilla Extract for type-safe, optimized styling
+- **Image Optimization**: Next.js automatic image optimization
+
+## Error Handling & Data Validation
+
+### 🛡️ Robust Error Handling
+
+#### **API Error Management**
+
+- **Graceful Degradation**: UI remains functional during API failures
+- **User-Friendly Messages**: Clear error descriptions instead of technical details
+- **Retry Logic**: Automatic retry for transient failures
+- **Fallback States**: Loading and error states for all async operations
+
+```typescript
+// Example: Comprehensive error handling in API routes
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  try {
+    const result = analyticsDataSchema.parse(queryResult);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Analytics API error:", error);
+
+    if (error instanceof z.ZodError) {
+      return res.status(500).json({
+        error: "Data validation failed",
+        details: error.errors,
+      });
+    }
+
+    return res.status(500).json({
+      error: "Failed to fetch analytics data",
+    });
+  }
+}
+```
+
+#### **Client-Side Error Boundaries**
+
+- **React Error Boundaries**: Prevent crashes from propagating
+- **Error Recovery**: Graceful handling of component failures
+- **User Feedback**: Clear error messages with recovery actions
+- **Logging**: Error tracking for debugging and monitoring
+
+### 🔍 Data Validation & Type Safety
+
+#### **Runtime Validation with Zod**
+
+- **Schema Validation**: All API responses validated against Zod schemas
+- **Type Generation**: TypeScript types automatically generated from schemas
+- **Data Transformation**: Safe parsing with error handling
+- **Null Safety**: Proper handling of missing or invalid data
+
+```typescript
+// Example: Zod schema for analytics data
+export const analyticsDataSchema = z.object({
+  monthlyTrends: z.array(
+    z.object({
+      month: z.string(),
+      count: z.number(),
+      year: z.number(),
+      monthName: z.string(),
+    })
+  ),
+  totalRecords: z.number(),
+  averagePerMonth: z.number(),
+  monthsWithData: z.number(),
+});
+
+export type AnalyticsData = z.infer<typeof analyticsDataSchema>;
+```
+
+#### **Database Layer Validation**
+
+- **SQL Parameter Binding**: Prevents SQL injection attacks
+- **Type Checking**: Database schema validation at runtime
+- **Constraint Enforcement**: Foreign key and data integrity constraints
+- **Error Recovery**: Graceful handling of database connection issues
+
+#### **Input Sanitization**
+
+- **XSS Prevention**: All user inputs properly escaped
+- **Data Normalization**: Consistent data formats across the application
+- **Boundary Validation**: Min/max limits on pagination and filters
+- **Format Validation**: Date, numeric, and string format checking
+
+### 🔧 Monitoring & Debugging
+
+#### **Development Tools**
+
+- **React Query Devtools**: Real-time cache and network inspection
+- **TypeScript Strict Mode**: Comprehensive compile-time checking
+- **ESLint & Prettier**: Code quality and consistency enforcement
+- **Source Maps**: Detailed debugging information in development
