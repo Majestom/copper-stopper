@@ -19,6 +19,11 @@ const navItems: NavItem[] = [
     label: "Table",
     icon: "📊",
   },
+  {
+    href: "/analytics",
+    label: "Analytics",
+    icon: "📈",
+  },
 ];
 
 export default function Sidebar() {
