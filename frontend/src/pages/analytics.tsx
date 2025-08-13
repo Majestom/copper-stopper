@@ -291,7 +291,6 @@ export default function Analytics() {
     },
   };
 
-  // Ethnicity trends over time (stacked area chart)
   const months = Object.keys(data.ethnicityTrends).sort();
   const ethnicities = [
     ...new Set(
@@ -299,7 +298,6 @@ export default function Analytics() {
     ),
   ];
 
-  // Generate distinct colors for each ethnicity
   const ethnicityColors = [
     { bg: "rgba(59, 130, 246, 0.7)", border: "rgba(59, 130, 246, 1)" },
     { bg: "rgba(16, 185, 129, 0.7)", border: "rgba(16, 185, 129, 1)" },
@@ -325,9 +323,9 @@ export default function Analytics() {
       borderColor: ethnicityColors[index % ethnicityColors.length].border,
       borderWidth: 0.5,
       fill: true,
-      tension: 0.4, // Smooth curves
-      pointRadius: 0, // Hide points for cleaner look
-      pointHoverRadius: 4, // Show points on hover
+      tension: 0.4,
+      pointRadius: 0,
+      pointHoverRadius: 4,
     })),
   };
 
@@ -335,7 +333,7 @@ export default function Analytics() {
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
-      mode: "index" as const,
+      mode: "point" as const,
       intersect: false,
     },
     plugins: {
@@ -347,24 +345,7 @@ export default function Analytics() {
         },
       },
       tooltip: {
-        mode: "index" as const,
-        intersect: false,
-        callbacks: {
-          label: function (tooltipItem: {
-            dataset: { label?: string };
-            parsed: { y: number };
-          }) {
-            const label = tooltipItem.dataset.label || "";
-            return `${label}: ${tooltipItem.parsed.y.toFixed(1)}%`;
-          },
-          footer: function (tooltipItems: Array<{ parsed: { y: number } }>) {
-            const total = tooltipItems.reduce(
-              (sum, item) => sum + item.parsed.y,
-              0
-            );
-            return `Total: ${total.toFixed(1)}%`;
-          },
-        },
+        enabled: false,
       },
     },
     scales: {
@@ -401,10 +382,10 @@ export default function Analytics() {
     },
     elements: {
       line: {
-        tension: 0.4, // Smooth curves
+        tension: 0.4,
       },
       point: {
-        radius: 0, // Hide points
+        radius: 0,
         hoverRadius: 4,
       },
     },
