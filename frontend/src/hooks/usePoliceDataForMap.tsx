@@ -1,34 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo, useCallback } from "react";
-import { z } from "zod";
-
-const MapFiltersSchema = z.object({
-  bbox: z.string().optional(),
-  type: z.string().optional(),
-  gender: z.string().optional(),
-  ageRange: z.string().optional(),
-  selfDefinedEthnicity: z.string().optional(),
-  officerDefinedEthnicity: z.string().optional(),
-  legislation: z.string().optional(),
-  objectOfSearch: z.string().optional(),
-  outcome: z.string().optional(),
-  outcomeLinkedToObjectOfSearch: z.string().optional(),
-  removalOfMoreThanOuterClothing: z.string().optional(),
-  streetName: z.string().optional(),
-  involvedPerson: z.string().optional(),
-  operation: z.string().optional(),
-  operationName: z.string().optional(),
-  force: z.string().optional(),
-  dateFrom: z.string().optional(),
-  dateTo: z.string().optional(),
-});
-
-type MapFilters = z.infer<typeof MapFiltersSchema>;
-
-type FetchMapDataParams = {
-  filters: MapFilters;
-  limit?: number;
-};
+import { FetchMapDataParams, MapFilters } from "../schemas/hookSchemas";
 
 async function fetchMapData({ filters, limit }: FetchMapDataParams) {
   const params = new URLSearchParams();

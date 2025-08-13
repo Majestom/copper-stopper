@@ -1,82 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo, useCallback } from "react";
-
-// Todo: convert to zod schema
-export type MapFilters = {
-  type?: string;
-  gender?: string;
-  ageRange?: string;
-  outcome?: string;
-  dateFrom?: string;
-  dateTo?: string;
-};
-
-export interface ClusterData {
-  cluster_lat: number;
-  cluster_lng: number;
-  point_count: number;
-  bounds_min_lat: number;
-  bounds_max_lat: number;
-  bounds_min_lng: number;
-  bounds_max_lng: number;
-}
-
-export interface PointData {
-  id: number;
-  datetime: string;
-  type: string;
-  age_range: string | null;
-  gender: string | null;
-  self_defined_ethnicity: string | null;
-  officer_defined_ethnicity: string | null;
-  legislation: string | null;
-  object_of_search: string | null;
-  outcome: string | null;
-  outcome_linked_to_object_of_search: boolean | null;
-  removal_of_more_than_outer_clothing: boolean | null;
-  latitude: number;
-  longitude: number;
-  street_name: string | null;
-  involved_person: boolean | null;
-  operation: boolean | null;
-  operation_name: string | null;
-  force: string;
-}
-
-interface ClusterResponse {
-  clusters: ClusterData[];
-  meta: {
-    zoom: number;
-    precision: number;
-    clusterCount: number;
-    pointsRepresented: number;
-    totalPoints: number;
-    bbox?: string;
-    queryType: string;
-  };
-  filters: MapFilters;
-}
-
-interface PointResponse {
-  data: PointData[];
-  meta: {
-    returned: number;
-    limit: number;
-    hasMore: boolean;
-    bbox?: string;
-    queryType: string;
-  };
-  filters: MapFilters;
-}
-
-type MapDataResponse = ClusterResponse | PointResponse;
-
-type FetchDataParams = {
-  filters: MapFilters;
-  zoom: number;
-  bbox?: string;
-  useIndividualPoints?: boolean;
-};
+import {
+  MapFilters,
+  FetchDataParams,
+  ClusterResponse,
+  PointResponse,
+  MapDataResponse,
+} from "../schemas/hookSchemas";
 
 function shouldUseIndividualPoints(zoom: number): boolean {
   return zoom >= 16;
