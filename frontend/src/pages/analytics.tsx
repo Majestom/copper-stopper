@@ -152,7 +152,6 @@ export default function Analytics() {
     },
   };
 
-  // Gender distribution chart
   const genderChartData = {
     labels: data.genderStats.map((stat) => stat.category),
     datasets: [
@@ -176,8 +175,7 @@ export default function Analytics() {
     ],
   };
 
-  // Age range chart
-  const ageRangeChartData = {
+=  const ageRangeChartData = {
     labels: data.ageRangeStats.map((stat) => stat.category),
     datasets: [
       {
@@ -206,7 +204,6 @@ export default function Analytics() {
     ],
   };
 
-  // Outcome chart - horizontal bar
   const outcomeChartData = {
     labels: data.outcomeStats.map((stat) => stat.category),
     datasets: [
