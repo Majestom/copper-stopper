@@ -137,19 +137,37 @@ export default function DataTable({
   return (
     <div className={styles.container}>
       <div className={styles.searchContainer}>
+        <label htmlFor="data-table-search" className={styles.searchLabel}>
+          Search all records
+        </label>
         <input
+          id="data-table-search"
           value={searchInput}
           onChange={(e) => handleSearchChange(e.target.value)}
           placeholder="Search all records..."
           className={styles.searchInput}
+          aria-describedby="search-description"
         />
+        <div id="search-description" className={styles.visuallyHidden}>
+          Search through all police stop and search records. Results will update automatically as you type.
+        </div>
       </div>
 
       <div className={styles.tableWrapper}>
-        <table className={styles.table}>
+        <table 
+          className={styles.table}
+          role="table"
+          aria-label="Police stop and search records"
+          aria-describedby="table-description"
+        >
+          <caption id="table-description" className={styles.visuallyHidden}>
+            Table showing police stop and search records with sortable columns. 
+            Use the search box above to filter results. 
+            Navigate between pages using the pagination controls below.
+          </caption>
           <thead className={styles.tableHead}>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
+              <tr key={headerGroup.id} role="row">
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort();
                   const isSorted = header.column.getIsSorted();
@@ -161,38 +179,64 @@ export default function DataTable({
                     headerClassName = styles.sortableHeader;
                   }
 
+                  const headerContent = flexRender(
+                    header.column.columnDef.header,
+                    header.getContext()
+                  );
+
+                  const sortIcon = isSorted === "asc"
+                    ? " ↑"
+                    : isSorted === "desc"
+                    ? " ↓"
+                    : canSort
+                    ? " ↕"
+                    : "";
+
                   return (
                     <th
                       key={header.id}
                       className={headerClassName}
-                      onClick={header.column.getToggleSortingHandler()}
+                      role="columnheader"
+                      scope="col"
+                      aria-sort={
+                        isSorted === "asc" ? "ascending" :
+                        isSorted === "desc" ? "descending" :
+                        canSort ? "none" : undefined
+                      }
                     >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
+                      {canSort ? (
+                        <button
+                          type="button"
+                          onClick={header.column.getToggleSortingHandler()}
+                          className={styles.sortButton}
+                          aria-label={`Sort by ${headerContent}${
+                            isSorted === "asc" ? " (currently ascending)" :
+                            isSorted === "desc" ? " (currently descending)" :
+                            " (not sorted)"
+                          }`}
+                        >
+                          <span>{headerContent}</span>
+                          <span aria-hidden="true">{sortIcon}</span>
+                        </button>
+                      ) : (
+                        <span>{headerContent}</span>
                       )}
-                      {isSorted === "asc"
-                        ? " ↑"
-                        : isSorted === "desc"
-                        ? " ↓"
-                        : canSort
-                        ? " ↕"
-                        : ""}
                     </th>
                   );
                 })}
               </tr>
             ))}
           </thead>
-          <tbody>
+          <tbody role="rowgroup">
             {isLoading ? (
               Array.from({ length: 10 }).map((_, index) => (
-                <tr key={`loading-${index}`} className={styles.tableRow}>
+                <tr key={`loading-${index}`} className={styles.tableRow} role="row">
                   {columns.map((_, colIndex) => (
                     <td
                       key={colIndex}
                       className={styles.tableCell}
                       style={{ opacity: 0.5 }}
+                      role="cell"
                     >
                       Loading...
                     </td>
@@ -200,11 +244,12 @@ export default function DataTable({
                 </tr>
               ))
             ) : table.getRowModel().rows.length === 0 ? (
-              <tr className={styles.tableRow}>
+              <tr className={styles.tableRow} role="row">
                 <td
                   colSpan={columns.length}
                   className={styles.tableCell}
                   style={{ textAlign: "center", padding: "2rem" }}
+                  role="cell"
                 >
                   {currentFilters.search
                     ? `No results found for "${currentFilters.search}"`
@@ -213,9 +258,9 @@ export default function DataTable({
               </tr>
             ) : (
               table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className={styles.tableRow}>
+                <tr key={row.id} className={styles.tableRow} role="row">
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className={styles.tableCell}>
+                    <td key={cell.id} className={styles.tableCell} role="cell">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -230,7 +275,7 @@ export default function DataTable({
       </div>
 
       <div className={styles.paginationContainer}>
-        <div className={styles.paginationInfo}>
+        <div className={styles.paginationInfo} aria-live="polite">
           Showing{" "}
           {pagination.currentPageRecords > 0
             ? (pagination.current.page - 1) * pagination.current.pageSize + 1
@@ -244,8 +289,9 @@ export default function DataTable({
           {currentFilters.search && ` (filtered)`}
         </div>
 
-        <div className={styles.paginationControls}>
+        <nav className={styles.paginationControls} aria-label="Table pagination">
           <button
+            type="button"
             onClick={() => onPageChange(1)}
             disabled={!pagination.hasPreviousPage}
             className={
@@ -253,10 +299,12 @@ export default function DataTable({
                 ? styles.paginationButton
                 : styles.paginationButtonDisabled
             }
+            aria-label="Go to first page"
           >
             {"<<"}
           </button>
           <button
+            type="button"
             onClick={() => onPageChange(pagination.current.page - 1)}
             disabled={!pagination.hasPreviousPage}
             className={
@@ -264,11 +312,12 @@ export default function DataTable({
                 ? styles.paginationButton
                 : styles.paginationButtonDisabled
             }
+            aria-label="Go to previous page"
           >
             {"<"}
           </button>
 
-          <span className={styles.pageInfo}>
+          <span className={styles.pageInfo} aria-current="page">
             Page{" "}
             <strong className={styles.pageInfoStrong}>
               {pagination.current.page} of{" "}
@@ -277,6 +326,7 @@ export default function DataTable({
           </span>
 
           <button
+            type="button"
             onClick={() => onPageChange(pagination.current.page + 1)}
             disabled={!pagination.hasNextPage}
             className={
@@ -284,10 +334,12 @@ export default function DataTable({
                 ? styles.paginationButton
                 : styles.paginationButtonDisabled
             }
+            aria-label="Go to next page"
           >
             {">"}
           </button>
           <button
+            type="button"
             onClick={() => onPageChange(pagination.totalPages)}
             disabled={!pagination.hasNextPage || pagination.totalPages <= 0}
             className={
@@ -295,10 +347,11 @@ export default function DataTable({
                 ? styles.paginationButton
                 : styles.paginationButtonDisabled
             }
+            aria-label="Go to last page"
           >
             {">>"}
           </button>
-        </div>
+        </nav>
       </div>
     </div>
   );

@@ -26,6 +26,26 @@ export const searchContainer = style({
   marginBottom: "16px",
 });
 
+export const searchLabel = style({
+  display: "block",
+  marginBottom: "4px",
+  fontSize: "14px",
+  fontWeight: "500",
+  color: "#374151",
+});
+
+export const visuallyHidden = style({
+  position: "absolute",
+  width: "1px",
+  height: "1px",
+  padding: "0",
+  margin: "-1px",
+  overflow: "hidden",
+  clip: "rect(0, 0, 0, 0)",
+  whiteSpace: "nowrap",
+  border: "0",
+});
+
 export const searchInput = style({
   color: "black",
   padding: "8px 12px",
@@ -89,12 +109,35 @@ export const sortableHeader = style([
 ]);
 
 export const sortedHeader = style([
-  sortableHeader,
+  headerCell,
   {
-    backgroundColor: "#dbeafe",
-    color: "#1e40af",
+    backgroundColor: "#d1d5db",
+    color: "#1f2937",
   },
 ]);
+
+export const sortButton = style({
+  display: "flex",
+  alignItems: "center",
+  width: "100%",
+  padding: "0",
+  margin: "0",
+  border: "none",
+  background: "transparent",
+  cursor: "pointer",
+  fontFamily: "inherit",
+  fontSize: "inherit",
+  fontWeight: "inherit",
+  color: "inherit",
+  textTransform: "inherit",
+  letterSpacing: "inherit",
+  textAlign: "left",
+  transition: "all 0.15s ease",
+  ":focus": {
+    outline: "2px solid #3b82f6",
+    outlineOffset: "2px",
+  },
+});
 
 export const tableRow = style({
   borderBottom: "1px solid #e5e7eb",
