@@ -400,7 +400,7 @@ export default function MapContainer(props: MapContainerProps) {
 
   return (
     <div
-      style={{ position: "relative", width: "100%", height: "100vh" }}
+      className={styles.appStyle}
       role="application"
       aria-label="Interactive police data map"
     >
