@@ -175,7 +175,7 @@ export default function Analytics() {
     ],
   };
 
-=  const ageRangeChartData = {
+  const ageRangeChartData = {
     labels: data.ageRangeStats.map((stat) => stat.category),
     datasets: [
       {
@@ -245,7 +245,6 @@ export default function Analytics() {
     },
   };
 
-  // Search type chart
   const searchTypeChartData = {
     labels: data.searchTypeStats.map((stat) => stat.category),
     datasets: [
