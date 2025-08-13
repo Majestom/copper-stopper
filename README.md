@@ -4,7 +4,7 @@ Copper Stopper is data visualisation platform for monitoring trends in police st
 
 ## Overview
 
-Copper Stopper provides interactive tools to analyze and visualize police stop and search data, helping researchers, journalists, and citizens understand patterns and trends in police activities across London. The application combines mapping, tabular data analysis, and statistical charts to provide multiple perspectives on the data.
+Copper Stopper provides interactive tools to analyse and visualise police stop and search data, helping researchers, journalists, and citizens understand patterns and trends in police activities across London. The application combines mapping, tabular data analysis, and statistical charts to provide multiple perspectives on the data.
 
 ## Features
 
