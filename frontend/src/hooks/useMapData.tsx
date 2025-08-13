@@ -69,10 +69,7 @@ export function useMapData(initialZoom: number = 10) {
   const [zoom, setZoom] = useState(initialZoom);
   const [bbox, setBbox] = useState<string | undefined>();
 
-  const useIndividualPoints = useMemo(
-    () => shouldUseIndividualPoints(zoom),
-    [zoom]
-  );
+  const useIndividualPoints = shouldUseIndividualPoints(zoom);
 
   const queryKey = useMemo(
     () => ["mapData", filters, zoom, bbox, useIndividualPoints],
