@@ -170,8 +170,8 @@ export default function FloatingFilterPanel({
         <div
           className={styles.scrollableContent}
           id="filter-content"
-          role="form"
-          aria-label="Filter options"
+          role="region"
+          aria-label="Filter controls"
         >
           <fieldset className={styles.fieldGroup}>
             <legend className={styles.legend}>Date Range</legend>
