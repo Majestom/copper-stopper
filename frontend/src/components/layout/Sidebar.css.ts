@@ -1,7 +1,9 @@
 import { style } from "@vanilla-extract/css";
 
 export const sidebar = style({
-  width: "130px",
+  minWidth: "180px",
+  width: "max-content",
+  maxWidth: "220px",
   height: "100%",
   backgroundColor: "#f8f9fa",
   borderRight: "1px solid #e9ecef",
@@ -14,22 +16,23 @@ export const nav = style({
   display: "flex",
   flexDirection: "column",
   gap: "8px",
-  padding: "0 20px",
+  padding: "0 16px",
 });
 
 export const navButton = style({
   display: "flex",
   alignItems: "center",
-  padding: "12px 16px",
+  padding: "12px 20px",
   backgroundColor: "transparent",
   border: "none",
-  borderRadius: "6px",
+  borderRadius: "8px",
   cursor: "pointer",
-  fontSize: "14px",
+  fontSize: "15px",
   fontWeight: "500",
   color: "#495057",
   textDecoration: "none",
   transition: "all 0.2s ease",
+  whiteSpace: "nowrap",
 
   ":hover": {
     backgroundColor: "#e9ecef",

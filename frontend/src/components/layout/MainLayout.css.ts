@@ -15,6 +15,8 @@ export const content = style({
 export const main = style({
   flex: 1,
   overflow: "auto",
+  backgroundColor: "#ffffff",
+  color: "#1f2937",
 });
 
 export const mobileMenuToggle = style({
