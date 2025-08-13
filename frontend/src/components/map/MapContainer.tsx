@@ -8,7 +8,6 @@ import Point from "ol/geom/Point";
 import { fromLonLat, toLonLat } from "ol/proj";
 import { FeatureLike } from "ol/Feature";
 import "ol/ol.css";
-import { useMapData, ClusterData, PointData } from "@/hooks/useMapData";
 import Style from "ol/style/Style";
 import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
@@ -16,10 +15,12 @@ import CircleStyle from "ol/style/Circle";
 import Text from "ol/style/Text";
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
+import { useMapData } from "@/hooks/useMapData";
+import { ClusterData, PointData } from "@/schemas/hookSchemas";
 import {
   MapContainerProps,
   MapContainerPropsSchema,
-} from "../../schemas/mapSchemas";
+} from "@/schemas/mapSchemas";
 import FloatingFilterPanel from "./FloatingFilterPanel";
 import { StopSearchPopup } from "./StopSearchPopup";
 import * as styles from "./MapContainer.css";
