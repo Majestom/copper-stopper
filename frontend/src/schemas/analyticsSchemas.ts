@@ -17,12 +17,24 @@ export const CategoryStatsSchema = z.object({
     .max(100, "Percentage must be between 0 and 100"),
 });
 
+export const EthnicityTrendSchema = z.record(
+  z.string(),
+  z.record(
+    z.string(),
+    z.object({
+      count: z.number().int().nonnegative(),
+      percentage: z.number().min(0).max(100),
+    })
+  )
+);
+
 export const AnalyticsResponseSchema = z.object({
   monthlyStats: z.array(MonthlyStatsSchema),
   genderStats: z.array(CategoryStatsSchema),
   ageRangeStats: z.array(CategoryStatsSchema),
   outcomeStats: z.array(CategoryStatsSchema),
   searchTypeStats: z.array(CategoryStatsSchema),
+  ethnicityTrends: EthnicityTrendSchema,
   totalStops: z
     .number()
     .int()
@@ -35,4 +47,5 @@ export const AnalyticsResponseSchema = z.object({
 
 export type MonthlyStats = z.infer<typeof MonthlyStatsSchema>;
 export type CategoryStats = z.infer<typeof CategoryStatsSchema>;
+export type EthnicityTrend = z.infer<typeof EthnicityTrendSchema>;
 export type AnalyticsResponse = z.infer<typeof AnalyticsResponseSchema>;

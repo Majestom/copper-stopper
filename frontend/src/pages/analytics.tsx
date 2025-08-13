@@ -6,22 +6,28 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
   Legend,
   ArcElement,
+  Filler,
 } from "chart.js";
-import { Bar, Pie, Doughnut } from "react-chartjs-2";
+import { Bar, Pie, Doughnut, Line } from "react-chartjs-2";
 import * as styles from "../styles/pages/analytics.css";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
   Legend,
-  ArcElement
+  ArcElement,
+  Filler
 );
 
 export default function Analytics() {
@@ -285,6 +291,125 @@ export default function Analytics() {
     },
   };
 
+  // Ethnicity trends over time (stacked area chart)
+  const months = Object.keys(data.ethnicityTrends).sort();
+  const ethnicities = [
+    ...new Set(
+      months.flatMap((month) => Object.keys(data.ethnicityTrends[month]))
+    ),
+  ];
+
+  // Generate distinct colors for each ethnicity
+  const ethnicityColors = [
+    { bg: "rgba(59, 130, 246, 0.7)", border: "rgba(59, 130, 246, 1)" },
+    { bg: "rgba(16, 185, 129, 0.7)", border: "rgba(16, 185, 129, 1)" },
+    { bg: "rgba(245, 158, 11, 0.7)", border: "rgba(245, 158, 11, 1)" },
+    { bg: "rgba(239, 68, 68, 0.7)", border: "rgba(239, 68, 68, 1)" },
+    { bg: "rgba(168, 85, 247, 0.7)", border: "rgba(168, 85, 247, 1)" },
+    { bg: "rgba(236, 72, 153, 0.7)", border: "rgba(236, 72, 153, 1)" },
+    { bg: "rgba(14, 165, 233, 0.7)", border: "rgba(14, 165, 233, 1)" },
+    { bg: "rgba(34, 197, 94, 0.7)", border: "rgba(34, 197, 94, 1)" },
+    { bg: "rgba(156, 163, 175, 0.7)", border: "rgba(156, 163, 175, 1)" },
+    { bg: "rgba(120, 113, 108, 0.7)", border: "rgba(120, 113, 108, 1)" },
+  ];
+
+  const ethnicityTrendsChartData = {
+    labels: months.map(formatMonthLabel),
+    datasets: ethnicities.map((ethnicity, index) => ({
+      label: ethnicity,
+      data: months.map((month) => {
+        const monthData = data.ethnicityTrends[month];
+        return monthData[ethnicity]?.percentage || 0;
+      }),
+      backgroundColor: ethnicityColors[index % ethnicityColors.length].bg,
+      borderColor: ethnicityColors[index % ethnicityColors.length].border,
+      borderWidth: 0.5,
+      fill: true,
+      tension: 0.4, // Smooth curves
+      pointRadius: 0, // Hide points for cleaner look
+      pointHoverRadius: 4, // Show points on hover
+    })),
+  };
+
+  const stackedAreaOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: "index" as const,
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+        position: "right" as const,
+        labels: {
+          usePointStyle: true,
+          padding: 15,
+        },
+      },
+      tooltip: {
+        mode: "index" as const,
+        intersect: false,
+        callbacks: {
+          label: function (tooltipItem: {
+            dataset: { label?: string };
+            parsed: { y: number };
+          }) {
+            const label = tooltipItem.dataset.label || "";
+            return `${label}: ${tooltipItem.parsed.y.toFixed(1)}%`;
+          },
+          footer: function (tooltipItems: Array<{ parsed: { y: number } }>) {
+            const total = tooltipItems.reduce(
+              (sum, item) => sum + item.parsed.y,
+              0
+            );
+            return `Total: ${total.toFixed(1)}%`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        display: true,
+        title: {
+          display: true,
+          text: "Time Period",
+        },
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        type: "linear" as const,
+        display: true,
+        position: "left" as const,
+        title: {
+          display: true,
+          text: "Percentage of Total (%)",
+        },
+        min: 0,
+        max: 100,
+        stacked: true,
+        grid: {
+          color: "rgba(0, 0, 0, 0.05)",
+        },
+        ticks: {
+          callback: function (value: string | number) {
+            return `${value}%`;
+          },
+        },
+      },
+    },
+    elements: {
+      line: {
+        tension: 0.4, // Smooth curves
+      },
+      point: {
+        radius: 0, // Hide points
+        hoverRadius: 4,
+      },
+    },
+  };
+
   return (
     <>
       <Head>
@@ -375,6 +500,39 @@ export default function Analytics() {
                       data.monthlyStats[data.monthlyStats.length - 1].month
                     )
                   : ""}
+              </div>
+            </div>
+          </section>
+
+          <section aria-labelledby="ethnicity-trends">
+            <div className={styles.chartContainer}>
+              <h2 id="ethnicity-trends" className={styles.chartTitle}>
+                Ethnicity Distribution Trends Over Time
+              </h2>
+              <p className={styles.chartDescription}>
+                Proportional breakdown of self-defined ethnicity over time,
+                normalized to 100% per month to show demographic trends
+              </p>
+              <div
+                className={styles.chartWrapper}
+                role="img"
+                aria-labelledby="ethnicity-trends"
+                aria-describedby="ethnicity-trends-desc"
+              >
+                <Line
+                  data={ethnicityTrendsChartData}
+                  options={stackedAreaOptions}
+                />
+              </div>
+              <div id="ethnicity-trends-desc" className="sr-only">
+                Stacked area chart showing ethnicity proportion trends from{" "}
+                {months.length > 0 ? formatMonthLabel(months[0]) : ""} to{" "}
+                {months.length > 0
+                  ? formatMonthLabel(months[months.length - 1])
+                  : ""}
+                . Shows the flowing proportional distribution of{" "}
+                {ethnicities.join(", ")} ethnicities over time, with smooth
+                curves representing the changing demographic composition.
               </div>
             </div>
           </section>

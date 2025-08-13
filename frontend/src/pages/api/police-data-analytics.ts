@@ -94,6 +94,55 @@ export default function handler(
       .prepare(searchTypeQuery)
       .all() as CategoryStats[];
 
+    const ethnicityTrendsQuery = `
+      WITH monthly_ethnicity AS (
+        SELECT 
+          strftime('%Y-%m', datetime) as month,
+          CASE 
+            WHEN self_defined_ethnicity IS NULL OR TRIM(self_defined_ethnicity) = '' THEN 'Unknown'
+            ELSE self_defined_ethnicity
+          END as ethnicity,
+          COUNT(*) as count
+        FROM stop_search 
+        WHERE datetime IS NOT NULL
+        GROUP BY strftime('%Y-%m', datetime), self_defined_ethnicity
+      ),
+      monthly_totals AS (
+        SELECT 
+          month,
+          SUM(count) as total_count
+        FROM monthly_ethnicity
+        GROUP BY month
+      )
+      SELECT 
+        me.month,
+        me.ethnicity,
+        me.count,
+        ROUND(me.count * 100.0 / mt.total_count, 1) as percentage
+      FROM monthly_ethnicity me
+      JOIN monthly_totals mt ON me.month = mt.month
+      ORDER BY me.month ASC, me.count DESC
+    `;
+    const ethnicityTrendsResults = db
+      .prepare(ethnicityTrendsQuery)
+      .all() as Array<{
+      month: string;
+      ethnicity: string;
+      count: number;
+      percentage: number;
+    }>;
+
+    const ethnicityTrends = ethnicityTrendsResults.reduce((acc, row) => {
+      if (!acc[row.month]) {
+        acc[row.month] = {};
+      }
+      acc[row.month][row.ethnicity] = {
+        count: row.count,
+        percentage: row.percentage,
+      };
+      return acc;
+    }, {} as Record<string, Record<string, { count: number; percentage: number }>>);
+
     const monthsWithData = monthlyResults.length;
     const averagePerMonth =
       monthsWithData > 0 ? Math.round(totalStops / monthsWithData) : 0;
@@ -104,6 +153,7 @@ export default function handler(
       ageRangeStats,
       outcomeStats,
       searchTypeStats,
+      ethnicityTrends,
       totalStops,
       averagePerMonth,
     };
