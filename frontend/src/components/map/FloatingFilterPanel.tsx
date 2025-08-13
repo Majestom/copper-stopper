@@ -1,16 +1,8 @@
 import { useState } from "react";
+import { FloatingFilterPanelProps } from "@/schemas/mapSchemas";
 import { MapFilters } from "@/hooks/usePoliceDataForMap";
 import * as styles from "./FloatingFilterPanel.css";
 
-interface FloatingFilterPanelProps {
-  filters: MapFilters;
-  onFiltersChange: (filters: Partial<MapFilters>) => void;
-  onClearFilters: () => void;
-  isLoading?: boolean;
-  totalCount?: number;
-}
-
-// Todo: bring these in from zod schemas or constants
 const TYPE_OPTIONS = [
   "Person search",
   "Vehicle search",
@@ -102,22 +94,15 @@ export default function FloatingFilterPanel({
 
   return (
     <div className={styles.panel} role="region" aria-label="Map data filters">
-      <div
+      <button
+        type="button"
         className={styles.header}
         onClick={() => setIsExpanded(!isExpanded)}
-        role="button"
-        tabIndex={0}
         aria-expanded={isExpanded}
         aria-controls="filter-content"
         aria-label={`Filter panel ${
           isExpanded ? "expanded" : "collapsed"
         }. ${activeFilterCount} filters active.`}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setIsExpanded(!isExpanded);
-          }
-        }}
       >
         <div className={styles.headerLeft}>
           <span className={styles.title}>Filters</span>
@@ -142,7 +127,7 @@ export default function FloatingFilterPanel({
             {isExpanded ? "−" : "+"}
           </span>
         </div>
-      </div>
+      </button>
 
       {activeFilterCount > 0 && !isExpanded && (
         <div
@@ -164,6 +149,7 @@ export default function FloatingFilterPanel({
               >
                 {getFilterDisplayName(key, value)}
                 <button
+                  type="button"
                   className={styles.removeFilterButton}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -187,33 +173,41 @@ export default function FloatingFilterPanel({
           role="form"
           aria-label="Filter options"
         >
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Date Range</label>
+          <fieldset className={styles.fieldGroup}>
+            <legend className={styles.legend}>Date Range</legend>
             <div className={styles.dateGrid}>
-              <input
-                type="date"
-                value={filters.dateFrom || ""}
-                onChange={(e) => handleFilterChange("dateFrom", e.target.value)}
-                className={styles.input}
-                aria-label="Filter from date"
-              />
-              <input
-                type="date"
-                value={filters.dateTo || ""}
-                onChange={(e) => handleFilterChange("dateTo", e.target.value)}
-                className={styles.input}
-                aria-label="Filter to date"
-              />
+              <div>
+                <label htmlFor="date-from" className={styles.label}>
+                  From
+                </label>
+                <input
+                  id="date-from"
+                  type="date"
+                  value={filters.dateFrom || ""}
+                  onChange={(e) =>
+                    handleFilterChange("dateFrom", e.target.value)
+                  }
+                  className={styles.input}
+                />
+              </div>
+              <div>
+                <label htmlFor="date-to" className={styles.label}>
+                  To
+                </label>
+                <input
+                  id="date-to"
+                  type="date"
+                  value={filters.dateTo || ""}
+                  onChange={(e) => handleFilterChange("dateTo", e.target.value)}
+                  className={styles.input}
+                />
+              </div>
             </div>
-          </div>
+          </fieldset>
 
           <fieldset className={styles.fieldGroup}>
             <legend className={styles.legend}>Type</legend>
-            <div
-              className={styles.checkboxGroup}
-              role="group"
-              aria-labelledby="type-legend"
-            >
+            <div className={styles.checkboxGroup}>
               {TYPE_OPTIONS.map((option) => (
                 <div key={option} className={styles.checkboxItem}>
                   <input
@@ -238,11 +232,7 @@ export default function FloatingFilterPanel({
 
           <fieldset className={styles.fieldGroup}>
             <legend className={styles.legend}>Gender</legend>
-            <div
-              className={styles.checkboxGroup}
-              role="group"
-              aria-labelledby="gender-legend"
-            >
+            <div className={styles.checkboxGroup}>
               {GENDER_OPTIONS.map((option) => (
                 <div key={option} className={styles.checkboxItem}>
                   <input
@@ -267,11 +257,7 @@ export default function FloatingFilterPanel({
 
           <fieldset className={styles.fieldGroup}>
             <legend className={styles.legend}>Age Range</legend>
-            <div
-              className={styles.checkboxGroup}
-              role="group"
-              aria-labelledby="ageRange-legend"
-            >
+            <div className={styles.checkboxGroup}>
               {AGE_RANGE_OPTIONS.map((option) => (
                 <div key={option} className={styles.checkboxItem}>
                   <input
@@ -296,11 +282,7 @@ export default function FloatingFilterPanel({
 
           <fieldset className={styles.fieldGroup}>
             <legend className={styles.legend}>Outcome</legend>
-            <div
-              className={styles.checkboxGroup}
-              role="group"
-              aria-labelledby="outcome-legend"
-            >
+            <div className={styles.checkboxGroup}>
               {OUTCOME_OPTIONS.map((option) => (
                 <div key={option} className={styles.checkboxItem}>
                   <input
@@ -324,6 +306,7 @@ export default function FloatingFilterPanel({
           </fieldset>
 
           <button
+            type="button"
             onClick={onClearFilters}
             disabled={activeFilterCount === 0}
             className={styles.clearButton}

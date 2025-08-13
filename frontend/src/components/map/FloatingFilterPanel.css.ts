@@ -40,6 +40,7 @@ export const header = style({
   ":hover": {
     backgroundColor: "#f3f4f6",
   },
+  border: "none",
 });
 
 export const headerLeft = style({

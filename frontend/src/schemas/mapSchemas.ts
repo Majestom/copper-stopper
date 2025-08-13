@@ -1,3 +1,4 @@
+import { MapFilters } from "@/hooks/usePoliceDataForMap";
 import { z } from "zod";
 
 export const MapContainerPropsSchema = z.object({
@@ -9,3 +10,11 @@ export const MapContainerPropsSchema = z.object({
 });
 
 export type MapContainerProps = z.infer<typeof MapContainerPropsSchema>;
+
+export type FloatingFilterPanelProps = {
+  filters: MapFilters;
+  onFiltersChange: (filters: Partial<MapFilters>) => void;
+  onClearFilters: () => void;
+  isLoading?: boolean;
+  totalCount?: number;
+};
