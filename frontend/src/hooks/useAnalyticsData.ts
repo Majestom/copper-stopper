@@ -1,15 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-
-interface MonthlyStats {
-  month: string;
-  count: number;
-}
-
-interface AnalyticsResponse {
-  monthlyStats: MonthlyStats[];
-  totalStops: number;
-  averagePerMonth: number;
-}
+import {
+  AnalyticsResponseSchema,
+  type AnalyticsResponse,
+} from "../schemas/analyticsSchemas";
 
 async function fetchAnalyticsData(): Promise<AnalyticsResponse> {
   const response = await fetch("/api/police-data-analytics");
@@ -18,7 +11,11 @@ async function fetchAnalyticsData(): Promise<AnalyticsResponse> {
     throw new Error("Failed to fetch analytics data");
   }
 
-  return response.json();
+  const data = await response.json();
+
+  const validatedData = AnalyticsResponseSchema.parse(data);
+
+  return validatedData;
 }
 
 export function useAnalyticsData() {

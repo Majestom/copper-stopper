@@ -57,6 +57,14 @@ export const chartContainer = style({
   borderRadius: "8px",
   padding: "24px",
   boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+  marginBottom: "24px",
+});
+
+export const chartsGrid = style({
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(500px, 1fr))",
+  gap: "24px",
+  marginBottom: "24px",
 });
 
 export const chartTitle = style({
@@ -70,6 +78,18 @@ export const chartWrapper = style({
   position: "relative",
   height: "400px",
   width: "100%",
+});
+
+export const smallChartWrapper = style({
+  position: "relative",
+  height: "300px",
+  width: "100%",
+});
+
+export const chartDescription = style({
+  fontSize: "14px",
+  color: "#6b7280",
+  marginBottom: "12px",
 });
 
 export const loadingContainer = style({
