@@ -45,7 +45,7 @@ Copper Stopper provides interactive tools to analyse and visualise police stop a
 - **Mapping**: OpenLayers with clustering and individual point display
 - **Charts**: Chart.js with React wrapper
 - **Data Management**: React Query for efficient caching and state management
-- **Containerization**: Docker and Docker Compose for easy deployment
+- **Containerisation**: Docker and Docker Compose for easy deployment
 
 ## Quick Start
 
@@ -90,7 +90,7 @@ Copper Stopper provides interactive tools to analyse and visualise police stop a
 
 The application features three main sections accessible via the sidebar:
 
-- **🗺️ Map**: Interactive geographical visualization
+- **🗺️ Map**: Interactive geographical visualisation
 - **📊 Table**: Detailed tabular data with filtering and search
 - **📈 Analytics**: Statistical charts and trend analysis
 
@@ -177,12 +177,12 @@ Copper Stopper is built with accessibility as a core principle, implementing com
 - **Skip Links**: Screen reader navigation shortcuts
 - **Button Semantics**: Proper button elements for interactive controls
 
-### ⚡ Performance Optimization
+### ⚡ Performance Optimisation
 
 #### **Data Loading Strategies**
 
 - **Intelligent Map Clustering**: Switches between clustered (zoom < 16) and individual point APIs
-- **Bounding Box Optimization**: Only loads data for visible map areas
+- **Bounding Box Optimisation**: Only loads data for visible map areas
 - **Pagination**: Large datasets split into manageable chunks (100 records per page)
 - **Debounced Search**: 300ms delay prevents excessive API calls during typing
 
@@ -205,12 +205,12 @@ useEffect(() => {
 - **Cache Invalidation**: Smart cache management for data consistency
 - **Optimistic Updates**: Immediate UI feedback while API calls complete
 
-#### **Bundle Optimization**
+#### **Bundle Optimisation**
 
 - **Code Splitting**: Pages and components loaded on demand
 - **Tree Shaking**: Unused code eliminated from bundles
 - **CSS-in-TypeScript**: Vanilla Extract for type-safe, optimized styling
-- **Image Optimization**: Next.js automatic image optimization
+- **Image Optimisation**: Next.js automatic image optimisation
 
 ## Error Handling & Data Validation
 
@@ -291,10 +291,10 @@ export type AnalyticsData = z.infer<typeof analyticsDataSchema>;
 - **Constraint Enforcement**: Foreign key and data integrity constraints
 - **Error Recovery**: Graceful handling of database connection issues
 
-#### **Input Sanitization**
+#### **Input Sanitisation**
 
 - **XSS Prevention**: All user inputs properly escaped
-- **Data Normalization**: Consistent data formats across the application
+- **Data Normalisation**: Consistent data formats across the application
 - **Boundary Validation**: Min/max limits on pagination and filters
 - **Format Validation**: Date, numeric, and string format checking
 
@@ -306,3 +306,60 @@ export type AnalyticsData = z.infer<typeof analyticsDataSchema>;
 - **TypeScript Strict Mode**: Comprehensive compile-time checking
 - **ESLint & Prettier**: Code quality and consistency enforcement
 - **Source Maps**: Detailed debugging information in development
+
+### 🧪 Testing Strategy
+
+#### **Overview**
+
+Our testing approach prioritises **practical, maintainable tests** over comprehensive coverage, focusing on business logic while avoiding complex UI dependencies.
+
+#### **Test Setup & Commands**
+
+```bash
+# Run tests in watch mode (development)
+npm test
+
+# Run tests with interactive UI
+npm run test:ui
+
+# Run tests once (CI/CD)
+npm run test:run
+
+# Generate coverage report
+npm run test:coverage
+```
+
+#### **What We Test**
+
+- **✅ Utility Functions**: Date formatting, data transformations, business logic
+- **✅ Data Validation**: Runtime validation with Zod schemas
+- **✅ API Response Handling**: Error states and data parsing
+- **⚠️ Component Testing**: Limited due to CSS-in-TypeScript complexity
+- **🚫 Map Components**: Excluded due to OpenLayers canvas/WebGL issues
+
+#### **Testing Philosophy**
+
+```typescript
+// Example: Focus on business logic and data transformations
+describe("Date Utilities", () => {
+  it("creates month keys correctly", () => {
+    const testDate = new Date("2024-01-15T10:30:00Z");
+    const monthKey = `${testDate.getFullYear()}-${String(
+      testDate.getMonth() + 1
+    ).padStart(2, "0")}`;
+    expect(monthKey).toBe("2024-01");
+  });
+
+  it("handles null values safely", () => {
+    const result = null || "fallback";
+    expect(result).toBe("fallback");
+  });
+});
+```
+
+#### **Deliberate Coverage Exclusions**
+
+- **Map Components** (`src/components/map/**`): OpenLayers testing complexity outweighs benefits
+- **CSS-in-TypeScript** (`**/*.css.ts`): Vanilla Extract + Vitest compatibility issues
+- **Next.js Boilerplate** (`_app.tsx`, `_document.tsx`): Framework-level code
+- **Complex UI Components**: Components with heavy external dependencies
